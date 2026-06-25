@@ -17,8 +17,8 @@
     <link rel="stylesheet" href="static/styles/platform/{{ platform }}.css">
   {% endif %}
   {% if rum_realm is not none and rum_auth is not none %}
-    <script src="https://cdn.signalfx.com/o11y-gdi-rum/latest/splunk-otel-web.js" crossorigin="anonymous"></script>
-    <!--script src="https://cdn.signalfx.com/o11y-gdi-rum/latest/splunk-otel-web-session-recorder.js" crossorigin="anonymous"></script-->
+    <script src="https://cdn.observability.splunkcloud.com/o11y-gdi-rum/v3/splunk-otel-web.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.observability.splunkcloud.com/o11y-gdi-rum/v3/splunk-otel-web-session-recorder.js" crossorigin="anonymous"></script>
     <script>
         var rum_realm = "{{ rum_realm }}";
         var rum_auth = "{{ rum_auth }}";
@@ -31,11 +31,23 @@
             rumAccessToken: rum_auth,
             applicationName: rum_app_name,
             version: splunk_version,
-            deploymentEnvironment: rum_environment
+            deploymentEnvironment: rum_environment,
+            user: { trackingMode: 'anonymousTracking' },
+            privacy: {
+                maskAllText: true,
+                sensitivityRules: [
+                    { rule: 'unmask', selector: 'h1, h2, h3, h4, h5, h6' },
+                    { rule: 'unmask', selector: 'button, .btn' },
+                    { rule: 'unmask', selector: '.navbar-brand, .nav-link, .dropdown-item' },
+                    { rule: 'mask', selector: '#account-user-name' }
+                ]
+            }
         });
-        // SplunkSessionRecorder.init({
-        //     realm: rum_realm,
-        //     rumAccessToken: rum_auth
-        // }); 
+
+        SplunkSessionRecorder.init({
+            realm: rum_realm,
+            rumAccessToken: rum_auth,
+            recorder: 'splunk'
+        });
     </script>
     {% endif %}

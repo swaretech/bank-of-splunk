@@ -116,6 +116,86 @@ The following button opens up an interactive tutorial showing how to deploy Bank
 
    Deleting the cluster may take a few minutes.
 
+## Quickstart (Local Kubernetes)
+
+You can run Bank of Splunk on a local Kubernetes cluster instead of GKE. The instructions below use [k3d](https://k3d.io) because it is lightweight and matches the `k3s-cluster` naming baked into the manifests, but any local cluster works (kind, minikube, or Docker Desktop's built-in Kubernetes) — only the cluster-create and frontend-access steps change.
+
+1. Install the prerequisites:
+
+   - [Docker Desktop](https://www.docker.com/) or [Docker Engine](https://docs.docker.com/engine/install/)
+   - [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+   - [`k3d`](https://k3d.io/#installation) — on macOS: `brew install k3d`; on Linux: `curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash`
+
+2. Clone the repository.
+
+   ```sh
+   git clone https://github.com/GoogleCloudPlatform/bank-of-anthos
+   cd bank-of-anthos/
+   ```
+
+3. Create a local cluster. Mapping the frontend port at create time avoids a separate `kubectl port-forward`:
+
+   ```sh
+   k3d cluster create bank-of-splunk -p "8083:8083@loadbalancer"
+   ```
+
+4. Provide RUM credentials. The frontend Deployment in [`kubernetes-manifests/frontend.yaml`](/kubernetes-manifests/frontend.yaml) reads `realm` and `rum_token` from a Kubernetes Secret named `workshop-secret`, so the pod will not start without it.
+
+   If you have a Splunk Observability Cloud RUM access token and want real RUM and DXA data:
+
+   ```sh
+   kubectl create secret generic workshop-secret \
+     --from-literal=realm=<YOUR_REALM> \
+     --from-literal=rum_token=<YOUR_RUM_TOKEN>
+   ```
+
+   If you are just testing the app locally without Splunk RUM, create a placeholder so the pod can start (the in-browser RUM init will simply fail to reach Splunk and will not affect the app):
+
+   ```sh
+   kubectl create secret generic workshop-secret \
+     --from-literal=realm=us0 \
+     --from-literal=rum_token=disabled
+   ```
+
+5. Deploy the application:
+
+   ```sh
+   kubectl apply -f ./extras/jwt/jwt-secret.yaml
+   kubectl apply -f ./kubernetes-manifests
+   ```
+
+6. Wait for the pods to be ready (Ctrl-C to exit the watch):
+
+   ```sh
+   kubectl get pods --watch
+   ```
+
+7. Open the frontend.
+
+   - With the port mapping from step 3, browse to <http://localhost:8083>.
+   - On any other local cluster (kind, minikube, Docker Desktop), use a port-forward in a separate terminal:
+
+     ```sh
+     kubectl port-forward service/frontend 8083:8083
+     ```
+
+     Then open <http://localhost:8083>.
+
+8. Sign in with the demo credentials defined in [`kubernetes-manifests/config.yaml`](/kubernetes-manifests/config.yaml):
+
+   - **Username**: `testuser`
+   - **Password**: `bankofsplunk`
+
+9. When you are done, tear it all down:
+
+   ```sh
+   k3d cluster delete bank-of-splunk
+   ```
+
+   For kind / minikube / Docker Desktop, use that tool's cluster-delete command, or simply remove the workloads with `kubectl delete -f ./kubernetes-manifests`.
+
+> **Note on backend telemetry**: the deployments point `OTEL_EXPORTER_OTLP_ENDPOINT` at `http://<node-ip>:4317`, which assumes a Splunk OTel Collector agent is running on the node (see [`kubernetes-deployment/AB-VARIANT-DEPLOYMENT.md`](/kubernetes-deployment/AB-VARIANT-DEPLOYMENT.md)). On a bare local cluster without the collector, the browser RUM/DXA path still works end-to-end (it goes browser → Splunk directly), but backend OTLP traces from the Python/Java services will be dropped. Install the [Splunk OTel Collector Helm chart](https://github.com/signalfx/splunk-otel-collector-chart) if you want backend traces locally as well.
+
 ## Additional deployment options
 
 - **Workload Identity**: [See these instructions.](/docs/workload-identity.md)
