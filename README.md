@@ -126,18 +126,20 @@ You can run Bank of Splunk on a local Kubernetes cluster instead of GKE. The ins
    - [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
    - [`k3d`](https://k3d.io/#installation) — on macOS: `brew install k3d`; on Linux: `curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash`
 
-2. Clone the repository.
+2. Clone this fork.
 
    ```sh
-   git clone https://github.com/GoogleCloudPlatform/bank-of-anthos
-   cd bank-of-anthos/
+   git clone https://github.com/swaretech/bank-of-splunk
+   cd bank-of-splunk/
    ```
 
-3. Create a local cluster. Mapping the frontend port at create time avoids a separate `kubectl port-forward`:
+3. Create a local cluster:
 
    ```sh
-   k3d cluster create bank-of-splunk -p "8083:8083@loadbalancer"
+   k3d cluster create bank-of-splunk
    ```
+
+   > The frontend Service in [`kubernetes-manifests/frontend.yaml`](/kubernetes-manifests/frontend.yaml) is `type: ClusterIP`, so we will access it via `kubectl port-forward` in step 7 — no cluster-level port mapping is needed and the same flow works for kind, minikube, and Docker Desktop.
 
 4. Provide RUM credentials. The frontend Deployment in [`kubernetes-manifests/frontend.yaml`](/kubernetes-manifests/frontend.yaml) reads `realm` and `rum_token` from a Kubernetes Secret named `workshop-secret`, so the pod will not start without it.
 
@@ -164,22 +166,21 @@ You can run Bank of Splunk on a local Kubernetes cluster instead of GKE. The ins
    kubectl apply -f ./kubernetes-manifests
    ```
 
+   > The container images are hosted on GitHub Container Registry under `ghcr.io/splunk/bank-of-splunk/*` (see [`kubernetes-manifests/frontend.yaml`](/kubernetes-manifests/frontend.yaml) etc.). If pods stay in `ImagePullBackOff`/`unauthorized`, the packages may be private — run `docker login ghcr.io` (or `echo $GHCR_TOKEN | docker login ghcr.io -u <your-gh-username> --password-stdin`) and create an `imagePullSecret`, or rebuild and push the images to your own registry.
+
 6. Wait for the pods to be ready (Ctrl-C to exit the watch):
 
    ```sh
    kubectl get pods --watch
    ```
 
-7. Open the frontend.
+7. Open the frontend with a port-forward (run in a separate terminal):
 
-   - With the port mapping from step 3, browse to <http://localhost:8083>.
-   - On any other local cluster (kind, minikube, Docker Desktop), use a port-forward in a separate terminal:
+   ```sh
+   kubectl port-forward service/frontend 8083:8083
+   ```
 
-     ```sh
-     kubectl port-forward service/frontend 8083:8083
-     ```
-
-     Then open <http://localhost:8083>.
+   Then browse to <http://localhost:8083>. This same command works for kind, minikube, and Docker Desktop clusters too.
 
 8. Sign in with the demo credentials defined in [`kubernetes-manifests/config.yaml`](/kubernetes-manifests/config.yaml):
 
