@@ -30,7 +30,7 @@ RUN apt-get update --yes && \
 
 # Install dependencies.
 COPY requirements.txt .
-RUN pip install --prefix="/install" -r requirements.txt
+RUN pip install --prefix="/install" -r requirements.txt "setuptools>=70,<81"
 
 FROM base
 
@@ -50,7 +50,7 @@ COPY . .
 # Ensure files are readable for non-root users
 RUN chmod a+r *
 
-RUN splunk-py-trace-bootstrap
+RUN pip install 'setuptools>=70,<81' && splunk-py-trace-bootstrap
 
 # Start server using waitress
 CMD splunk-py-trace waitress-serve --port=$PORT --threads=4 --call contacts:create_app

@@ -126,6 +126,8 @@ You can run Bank of Splunk on a local Kubernetes cluster instead of GKE. The ins
    - [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
    - [`k3d`](https://k3d.io/#installation) — on macOS: `brew install k3d`; on Linux: `curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash`
 
+   If you plan to build images locally (recommended in step 5, option B), you also need [skaffold 2.9+](https://skaffold.dev/docs/install/), [OpenJDK 21+](https://openjdk.java.net/projects/jdk/21/), [Maven 3.9+](https://maven.apache.org/download.cgi), and [Python 3.12+](https://www.python.org/downloads/). See [`docs/development.md`](/docs/development.md) for details.
+
 2. Clone this fork.
 
    ```sh
@@ -141,32 +143,129 @@ You can run Bank of Splunk on a local Kubernetes cluster instead of GKE. The ins
 
    > The frontend Service in [`kubernetes-manifests/frontend.yaml`](/kubernetes-manifests/frontend.yaml) is `type: ClusterIP`, so we will access it via `kubectl port-forward` in step 7 — no cluster-level port mapping is needed and the same flow works for kind, minikube, and Docker Desktop.
 
-4. Provide RUM credentials. The frontend Deployment in [`kubernetes-manifests/frontend.yaml`](/kubernetes-manifests/frontend.yaml) reads `realm` and `rum_token` from a Kubernetes Secret named `workshop-secret`, so the pod will not start without it.
+4. Provide RUM credentials. The frontend reads Splunk RUM settings from a Kubernetes Secret named `workshop-secret`.
 
    If you have a Splunk Observability Cloud RUM access token and want real RUM and DXA data:
 
    ```sh
    kubectl create secret generic workshop-secret \
      --from-literal=realm=<YOUR_REALM> \
-     --from-literal=rum_token=<YOUR_RUM_TOKEN>
+     --from-literal=rum_token=<YOUR_RUM_TOKEN> \
+     --from-literal=app=bank-of-splunk \
+     --from-literal=env=local
    ```
 
-   If you are just testing the app locally without Splunk RUM, create a placeholder so the pod can start (the in-browser RUM init will simply fail to reach Splunk and will not affect the app):
+   If you are just testing locally without Splunk RUM, use placeholders (the in-browser RUM init will fail to reach Splunk and will not affect the app):
 
    ```sh
    kubectl create secret generic workshop-secret \
      --from-literal=realm=us0 \
-     --from-literal=rum_token=disabled
+     --from-literal=rum_token=disabled \
+     --from-literal=app=bank-of-splunk \
+     --from-literal=env=local
    ```
 
-5. Deploy the application:
+   > Option A release manifests ([`kubernetes-manifests/frontend.yaml`](/kubernetes-manifests/frontend.yaml)) only mount `realm` and `rum_token`. Option B development overlays also require `app` and `env` — include all four keys above to avoid `CreateContainerConfigError` on the frontend pod.
+
+5. Deploy the application. Choose one of the following:
+
+   **Option A — Pull pre-built release images (requires GHCR access)**
+
+   The manifests in [`kubernetes-manifests/`](/kubernetes-manifests) pin immutable images on GitHub Container Registry (`ghcr.io/splunk/bank-of-splunk/*`; see [`kubernetes-manifests/frontend.yaml`](/kubernetes-manifests/frontend.yaml)). Use this path for a quick demo when you already have registry access.
 
    ```sh
    kubectl apply -f ./extras/jwt/jwt-secret.yaml
    kubectl apply -f ./kubernetes-manifests
    ```
 
-   > The container images are hosted on GitHub Container Registry under `ghcr.io/splunk/bank-of-splunk/*` (see [`kubernetes-manifests/frontend.yaml`](/kubernetes-manifests/frontend.yaml) etc.). If pods stay in `ImagePullBackOff`/`unauthorized`, the packages may be private — run `docker login ghcr.io` (or `echo $GHCR_TOKEN | docker login ghcr.io -u <your-gh-username> --password-stdin`) and create an `imagePullSecret`, or rebuild and push the images to your own registry.
+   If pods stay in `ImagePullBackOff` / `ErrImagePull`, the packages are likely private. Create a pull secret with a GitHub PAT that has `read:packages` scope (store the token in an environment variable — do not paste it on the command line):
+
+   ```sh
+   kubectl create secret docker-registry ghcr-creds \
+     --docker-server=ghcr.io \
+     --docker-username=<your-github-username> \
+     --docker-password="$GHCR_TOKEN"
+
+   kubectl patch serviceaccount default \
+     -p '{"imagePullSecrets": [{"name": "ghcr-creds"}]}'
+   ```
+
+   Then delete the failing pods so they are recreated and can pull:
+
+   ```sh
+   kubectl delete pods --all
+   ```
+
+   > [`kubernetes-manifests/rum-loadgen.yaml`](/kubernetes-manifests/rum-loadgen.yaml) is optional RUM traffic simulation and pulls from a separate image (`ghcr.io/splunk/online-boutique/rumloadgen`). Skip it if you do not need automated RUM load: `kubectl delete deployment bankofsplunk-loadgen --ignore-not-found`
+
+   **Option B — Build locally and load into the cluster (recommended)**
+
+   Build all services from source and load images directly into your local cluster — no GHCR credentials, no outbound image pulls, and no registry to run. This is the most secure default for local development and air-gapped environments.
+
+   The fastest path is the helper script (tested on k3d + Apple Silicon):
+
+   ```sh
+   ./extras/local-k8s/deploy-option-b.sh
+   ```
+
+   It builds the databases with Skaffold, builds the application images with Docker/Jib, imports them into k3d, and deploys the development overlays. Re-run with `SKIP_BUILD=true ./extras/local-k8s/deploy-option-b.sh` to redeploy without rebuilding.
+
+   **Manual equivalent** (if you prefer not to use the script):
+
+   ```sh
+   # Shared config
+   kubectl apply -f ./extras/jwt/jwt-secret.yaml
+   kubectl apply -f ./kubernetes-manifests/config.yaml
+   kubectl apply -f ./iac/acm-multienv-cicd-anthos-autopilot/base/sa.yaml
+
+   skaffold config set --kube-context k3d-bank-of-splunk local-cluster true
+
+   # Databases (Skaffold modules — no e2e-tests dependency)
+   skaffold run --module=accounts-db --profile=development \
+     --default-repo=bank-of-splunk --skip-tests=true
+   skaffold run --module=ledger-db --profile=development \
+     --default-repo=bank-of-splunk --skip-tests=true
+
+   # Application images — see deploy-option-b.sh for build commands, then:
+   k3d image import bank-of-splunk/frontend:local ... -c bank-of-splunk
+
+   # Deploy overlays (substitute bank-of-splunk/<service>:local into each kustomize output)
+   kubectl kustomize src/frontend/k8s/overlays/development \
+     | sed 's|image: frontend|image: bank-of-splunk/frontend:local|' | kubectl apply -f -
+   # ... repeat for contacts, userservice, balancereader, ledgerwriter, transactionhistory, loadgenerator
+   ```
+
+   > **Do not use a bare `skaffold run` at the repo root** for Option B. The root Skaffold config pulls in an `e2e-tests` image build (Cypress) that is unrelated to running the app and often fails on corporate networks or Docker Desktop proxy settings. The script and manual flow above avoid it.
+
+   To tear down: `kubectl delete -f ./kubernetes-manifests/config.yaml` plus `skaffold delete --module=accounts-db --profile=development` (repeat per module), or `k3d cluster delete bank-of-splunk`. To stop loading images locally: `skaffold config unset --kube-context k3d-bank-of-splunk local-cluster`.
+
+   > **kind / minikube / Docker Desktop**: set `KUBE_CONTEXT=$(kubectl config current-context)` when running the script. Skaffold detects these runtimes and loads images the same way when `local-cluster` is enabled.
+   >
+   > **Local registry (optional)**: create the cluster with a localhost-only registry — `k3d cluster create bank-of-splunk --registry-create bank-of-splunk-registry:127.0.0.1:5111` — push built images there, and point `--default-repo=localhost:5111/bank-of-splunk` in Skaffold build steps.
+
+   <details>
+   <summary><strong>Option B troubleshooting</strong> (Apple Silicon, Docker proxy, build errors)</summary>
+
+   **Apple Silicon (M-series Mac)** — k3d nodes are usually `arm64`. Use `--platform=linux/arm64` (the script detects this automatically). For Java services, the pinned Jib base image (`eclipse-temurin:17-jre-alpine`) is amd64-only; the script switches to `eclipse-temurin:17-jre` on arm64. On Intel Macs / amd64 Linux, `linux/amd64` is used instead.
+
+   **Docker Desktop HTTP proxy** — if Debian-based image builds fail with `apt-get update` / `404 Not Found` against `deb.debian.org` while the host can reach the internet, Docker Desktop's internal proxy is usually the cause (`docker info | grep -i proxy`). Pass empty proxy build-args to clear it:
+
+   ```sh
+   docker build \
+     --build-arg HTTP_PROXY= --build-arg HTTPS_PROXY= \
+     --build-arg http_proxy= --build-arg https_proxy= \
+     -t bank-of-splunk/frontend:local src/frontend
+   ```
+
+   **Python build: `ModuleNotFoundError: pkg_resources`** — Splunk OTel bootstrap requires `setuptools` with `pkg_resources` on Python 3.12. The service Dockerfiles pin `setuptools>=70,<81`; pull the latest repo if you see this during `splunk-py-trace-bootstrap`.
+
+   **Pods stuck with `FailedCreate` / `serviceaccount "bank-of-anthos" not found`** — apply the ServiceAccount: `kubectl apply -f ./iac/acm-multienv-cicd-anthos-autopilot/base/sa.yaml`, then `kubectl rollout restart deployment --all`.
+
+   **Frontend `CreateContainerConfigError` / `couldn't find key app in Secret workshop-secret`** — the development overlay expects four secret keys (`realm`, `rum_token`, `app`, `env`). Recreate the secret as shown in step 4.
+
+   **Only three Docker containers visible** — `k3d-bank-of-splunk-server-0`, `k3d-bank-of-splunk-serverlb`, and `k3d-bank-of-splunk-tools` are the k3d cluster itself, not Bank of Splunk application images. Application images are imported into the k3s node filesystem via `k3d image import` or Skaffold's `local-cluster` mode.
+
+   </details>
 
 6. Wait for the pods to be ready (Ctrl-C to exit the watch):
 
@@ -193,7 +292,7 @@ You can run Bank of Splunk on a local Kubernetes cluster instead of GKE. The ins
    k3d cluster delete bank-of-splunk
    ```
 
-   For kind / minikube / Docker Desktop, use that tool's cluster-delete command, or simply remove the workloads with `kubectl delete -f ./kubernetes-manifests`.
+   For kind / minikube / Docker Desktop, use that tool's cluster-delete command. To remove workloads without deleting the cluster, run `kubectl delete -f ./kubernetes-manifests` (Option A) or `skaffold delete --profile development` (Option B).
 
 > **Note on backend telemetry**: the deployments point `OTEL_EXPORTER_OTLP_ENDPOINT` at `http://<node-ip>:4317`, which assumes a Splunk OTel Collector agent is running on the node (see [`kubernetes-deployment/AB-VARIANT-DEPLOYMENT.md`](/kubernetes-deployment/AB-VARIANT-DEPLOYMENT.md)). On a bare local cluster without the collector, the browser RUM/DXA path still works end-to-end (it goes browser → Splunk directly), but backend OTLP traces from the Python/Java services will be dropped. Install the [Splunk OTel Collector Helm chart](https://github.com/signalfx/splunk-otel-collector-chart) if you want backend traces locally as well.
 
