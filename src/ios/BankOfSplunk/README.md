@@ -34,6 +34,18 @@ Native SwiftUI iOS client for Bank of Splunk with **Splunk RUM for Mobile** and 
 
 4. Open `BankOfSplunk.xcodeproj` in Xcode and run on the Simulator.
 
+## Demo credentials
+
+When the backend is deployed with demo data (`USE_DEMO_DATA=True` in [`kubernetes-manifests/config.yaml`](/kubernetes-manifests/config.yaml)), these pre-seeded accounts work for login:
+
+| Username | Password |
+|----------|----------|
+| `testuser` | `bankofsplunk` |
+| `alice` | `bankofsplunk` |
+| `bob` | `bankofsplunk` |
+
+All demo users share the same password. See [`src/accounts/accounts-db/initdb/1-load-testdata.sql`](/src/accounts/accounts-db/initdb/1-load-testdata.sql) for the full seed set (`eve` is also available).
+
 ## Architecture
 
 The app calls JSON endpoints on the Flask frontend (`/api/v1/*`), which proxies to the same microservices as the web UI:
