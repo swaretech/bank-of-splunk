@@ -1,0 +1,8 @@
+#include "Secrets.xcconfig"
+
+API_BASE_URL = https:/$()/eua-bank.splunko11y.com
+RUM_REALM = us0
+RUM_ACCESS_TOKEN = disabled
+RUM_APP_NAME = bank-of-splunk-ios
+RUM_ENVIRONMENT = bank-production
+SPLUNK_VERSION = 1.0.0

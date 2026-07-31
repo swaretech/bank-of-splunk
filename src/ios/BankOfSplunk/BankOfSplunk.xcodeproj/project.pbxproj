@@ -1,0 +1,432 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		00000000000000000000012C /* BankOfSplunkApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000064 /* BankOfSplunkApp.swift */; };
+		00000000000000000000012D /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000065 /* AppConfig.swift */; };
+		00000000000000000000012E /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000066 /* KeychainStore.swift */; };
+		00000000000000000000012F /* AuthStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000067 /* AuthStore.swift */; };
+		000000000000000000000130 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000068 /* APIClient.swift */; };
+		000000000000000000000131 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000069 /* Models.swift */; };
+		000000000000000000000132 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006A /* LoginView.swift */; };
+		000000000000000000000133 /* SignupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006B /* SignupView.swift */; };
+		000000000000000000000134 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006C /* HomeView.swift */; };
+		000000000000000000000135 /* DepositView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* DepositView.swift */; };
+		000000000000000000000136 /* PaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006E /* PaymentView.swift */; };
+		000000000000000000000137 /* TransactionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006F /* TransactionListView.swift */; };
+		000000000000000000000138 /* DXAIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000070 /* DXAIdentifiers.swift */; };
+		000000000000000000000139 /* BankRum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000071 /* BankRum.swift */; };
+		00000000000000000000013A /* SplunkRUMConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000072 /* SplunkRUMConfiguration.swift */; };
+		000000000000000000000190 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000011 /* Assets.xcassets */; };
+		000000000000000000000014 /* SplunkAgent in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000013 /* SplunkAgent */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		000000000000000000000006 /* BankOfSplunk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BankOfSplunk.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000015 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		000000000000000000000016 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		000000000000000000000064 /* BankOfSplunkApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankOfSplunkApp.swift; sourceTree = "<group>"; };
+		000000000000000000000065 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		000000000000000000000066 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		000000000000000000000067 /* AuthStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthStore.swift; sourceTree = "<group>"; };
+		000000000000000000000068 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		000000000000000000000069 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		00000000000000000000006A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		00000000000000000000006B /* SignupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupView.swift; sourceTree = "<group>"; };
+		00000000000000000000006C /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		00000000000000000000006D /* DepositView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositView.swift; sourceTree = "<group>"; };
+		00000000000000000000006E /* PaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentView.swift; sourceTree = "<group>"; };
+		00000000000000000000006F /* TransactionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionListView.swift; sourceTree = "<group>"; };
+		000000000000000000000070 /* DXAIdentifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DXAIdentifiers.swift; sourceTree = "<group>"; };
+		000000000000000000000071 /* BankRum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankRum.swift; sourceTree = "<group>"; };
+		000000000000000000000072 /* SplunkRUMConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplunkRUMConfiguration.swift; sourceTree = "<group>"; };
+		000000000000000000000010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		000000000000000000000011 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		000000000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000014 /* SplunkAgent in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		000000000000000000000007 = {
+			isa = PBXGroup;
+			children = (
+				0000000000000000000001F3 /* Config */,
+				000000000000000000000009 /* BankOfSplunk */,
+				000000000000000000000008 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0000000000000000000001F3 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000015 /* Debug.xcconfig */,
+				000000000000000000000016 /* Release.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		000000000000000000000008 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000006 /* BankOfSplunk.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		000000000000000000000009 /* BankOfSplunk */ = {
+			isa = PBXGroup;
+			children = (
+				0000000000000000000001F4 /* App */,
+				0000000000000000000001F5 /* Core */,
+				0000000000000000000001FA /* Features */,
+				000000000000000000000201 /* Observability */,
+				000000000000000000000202 /* Resources */,
+				000000000000000000000010 /* Info.plist */,
+			);
+			path = BankOfSplunk;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001F4 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000064 /* BankOfSplunkApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001F5 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				0000000000000000000001F7 /* Auth */,
+				0000000000000000000001F6 /* Config */,
+				0000000000000000000001F9 /* Models */,
+				0000000000000000000001F8 /* Networking */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001FA /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				0000000000000000000001FE /* Deposit */,
+				0000000000000000000001FD /* Home */,
+				0000000000000000000001FB /* Login */,
+				0000000000000000000001FF /* Payment */,
+				0000000000000000000001FC /* Signup */,
+				000000000000000000000200 /* Transactions */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		000000000000000000000201 /* Observability */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000070 /* DXAIdentifiers.swift */,
+				000000000000000000000071 /* BankRum.swift */,
+				000000000000000000000072 /* SplunkRUMConfiguration.swift */,
+			);
+			path = Observability;
+			sourceTree = "<group>";
+		};
+		000000000000000000000202 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000011 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001F6 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000065 /* AppConfig.swift */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001F7 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000066 /* KeychainStore.swift */,
+				000000000000000000000067 /* AuthStore.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001F8 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000068 /* APIClient.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001F9 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000069 /* Models.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001FB /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000006A /* LoginView.swift */,
+			);
+			path = Login;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001FC /* Signup */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000006B /* SignupView.swift */,
+			);
+			path = Signup;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001FD /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000006C /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001FE /* Deposit */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000006D /* DepositView.swift */,
+			);
+			path = Deposit;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001FF /* Payment */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000006E /* PaymentView.swift */,
+			);
+			path = Payment;
+			sourceTree = "<group>";
+		};
+		000000000000000000000200 /* Transactions */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000006F /* TransactionListView.swift */,
+			);
+			path = Transactions;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		000000000000000000000002 /* BankOfSplunk */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 00000000000000000000000B /* Build configuration list for PBXNativeTarget "BankOfSplunk" */;
+			buildPhases = (
+				000000000000000000000003 /* Sources */,
+				000000000000000000000005 /* Frameworks */,
+				000000000000000000000004 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = ();
+			name = BankOfSplunk;
+			packageProductDependencies = (000000000000000000000013 /* SplunkAgent */,);
+			productName = BankOfSplunk;
+			productReference = 000000000000000000000006 /* BankOfSplunk.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+			};
+			buildConfigurationList = 00000000000000000000000A /* Build configuration list for PBXProject "BankOfSplunk" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base);
+			mainGroup = 000000000000000000000007;
+			packageReferences = (000000000000000000000012 /* XCRemoteSwiftPackageReference "splunk-otel-ios" */,);
+			productRefGroup = 000000000000000000000008 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				000000000000000000000002 /* BankOfSplunk */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		000000000000000000000004 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000190 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		000000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				00000000000000000000012C /* BankOfSplunkApp.swift in Sources */,
+				00000000000000000000012D /* AppConfig.swift in Sources */,
+				00000000000000000000012E /* KeychainStore.swift in Sources */,
+				00000000000000000000012F /* AuthStore.swift in Sources */,
+				000000000000000000000130 /* APIClient.swift in Sources */,
+				000000000000000000000131 /* Models.swift in Sources */,
+				000000000000000000000132 /* LoginView.swift in Sources */,
+				000000000000000000000133 /* SignupView.swift in Sources */,
+				000000000000000000000134 /* HomeView.swift in Sources */,
+				000000000000000000000135 /* DepositView.swift in Sources */,
+				000000000000000000000136 /* PaymentView.swift in Sources */,
+				000000000000000000000137 /* TransactionListView.swift in Sources */,
+				000000000000000000000138 /* DXAIdentifiers.swift in Sources */,
+				000000000000000000000139 /* BankRum.swift in Sources */,
+				00000000000000000000013A /* SplunkRUMConfiguration.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		00000000000000000000000C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			name = Debug;
+			baseConfigurationReference = 000000000000000000000015 /* Debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+		};
+		00000000000000000000000D /* Release */ = {
+			isa = XCBuildConfiguration;
+			name = Release;
+			baseConfigurationReference = 000000000000000000000016 /* Release.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+		};
+		00000000000000000000000E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			name = Debug;
+			baseConfigurationReference = 000000000000000000000015 /* Debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BankOfSplunk/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.splunk.bankofsplunk;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+		};
+		00000000000000000000000F /* Release */ = {
+			isa = XCBuildConfiguration;
+			name = Release;
+			baseConfigurationReference = 000000000000000000000016 /* Release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BankOfSplunk/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.splunk.bankofsplunk;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		00000000000000000000000A /* Build configuration list for PBXProject "BankOfSplunk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00000000000000000000000C /* Debug */,
+				00000000000000000000000D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		00000000000000000000000B /* Build configuration list for PBXNativeTarget "BankOfSplunk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00000000000000000000000E /* Debug */,
+				00000000000000000000000F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		000000000000000000000012 /* XCRemoteSwiftPackageReference "splunk-otel-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/signalfx/splunk-otel-ios";
+			requirement = {
+				kind = exactVersion;
+				version = 2.0.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		000000000000000000000013 /* SplunkAgent */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 000000000000000000000012 /* XCRemoteSwiftPackageReference "splunk-otel-ios" */;
+			productName = SplunkAgent;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 000000000000000000000001 /* Project object */;
+}

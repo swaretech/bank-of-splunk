@@ -344,6 +344,23 @@ Each page sets `data-trackid="{{ dxa_page }}"` on `<body>` (`home`, `login`, `si
 
 See [`src/frontend/README.md`](/src/frontend/README.md) for frontend service details.
 
+### Native iOS app
+
+A SwiftUI iOS client lives in [`src/ios/BankOfSplunk/`](src/ios/BankOfSplunk/). It uses the same backend via a JSON API (`/api/v1/*` on the Flask frontend) and is instrumented with **Splunk RUM for Mobile 2.x** and DXA-compatible tracking.
+
+**Mobile DXA event definitions** (create in Observability Cloud, parallel to web):
+
+| Event | Filter |
+|-------|--------|
+| Login submitted | `track.id=login-submit` |
+| Deposit completed (intent) | `track.id=deposit-submit` |
+| Payment completed (intent) | `track.id=payment-submit` |
+| Registration started | `track.id=signup-navigate` |
+| Auth failure | custom event `auth.login_failed` |
+| Form validation issue | custom event `form.validation_failed` |
+
+Setup: copy `src/ios/BankOfSplunk/Config/Secrets.xcconfig.example` to `Secrets.xcconfig`, port-forward frontend to `:8083`, open `BankOfSplunk.xcodeproj`. See [`src/ios/BankOfSplunk/README.md`](/src/ios/BankOfSplunk/README.md).
+
 ## Additional deployment options
 
 - **Workload Identity**: [See these instructions.](/docs/workload-identity.md)

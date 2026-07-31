@@ -20,6 +20,21 @@ Implemented in Python with Flask.
 | `/signup`  | POST  |       |  Submits new user signup request to `userservice`                                         |
 | `/version` | GET   |       |  Returns the contents of `$VERSION`                                                       |
 
+### Mobile JSON API (`/api/v1`)
+
+Bearer-token JSON endpoints for the native iOS app ([`src/ios/BankOfSplunk/`](/src/ios/BankOfSplunk/)):
+
+| Endpoint | Type | Auth? | Description |
+| -------- | ---- | ----- | ----------- |
+| `/api/v1/login` | POST | | `{username, password}` → `{token, name, user, account_id}` |
+| `/api/v1/signup` | POST | | Registration fields → auto-login token |
+| `/api/v1/logout` | POST | 🔒 | 204 |
+| `/api/v1/home` | GET | 🔒 | Balance, history, contacts |
+| `/api/v1/deposit` | POST | 🔒 | Submit deposit transaction |
+| `/api/v1/payment` | POST | 🔒 | Submit payment transaction |
+
+See [`api_v1.py`](api_v1.py) for request/response details.
+
 ### Environment Variables
 
 - `VERSION`

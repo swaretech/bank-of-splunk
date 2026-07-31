@@ -38,6 +38,7 @@ from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
 # Local imports
 from api_call import ApiCall, ApiRequest
+from api_v1 import register_api_v1
 from traced_thread_pool_executor import TracedThreadPoolExecutor
 
 # Local constants
@@ -323,9 +324,16 @@ def create_app():
                                 _external=True,
                                 _scheme=app.config['SCHEME']))
 
-    def _submit_transaction(transaction_data):
+    def _get_request_token():
+        auth = request.headers.get('Authorization', '')
+        if auth.startswith('Bearer '):
+            return auth[7:].strip()
+        return request.cookies.get(app.config['TOKEN_NAME'])
+
+    def _submit_transaction(transaction_data, token=None):
         app.logger.debug('Submitting transaction.')
-        token = request.cookies.get(app.config['TOKEN_NAME'])
+        if token is None:
+            token = _get_request_token()
         hed = {'Authorization': 'Bearer ' + token,
                'content-type': 'application/json'}
         resp = requests.post(url=app.config["TRANSACTIONS_URI"],
@@ -340,14 +348,15 @@ def create_app():
         # and transaction-history
         sleep(0.25)
 
-    def _add_contact(label, acct_num, routing_num, is_external_acct=False):
+    def _add_contact(label, acct_num, routing_num, is_external_acct=False, token=None):
         """
         Submits a new contact to the contact service.
 
         Raise: UserWarning  if the response status is 4xx or 5xx.
         """
         app.logger.debug('Adding new contact.')
-        token = request.cookies.get(app.config['TOKEN_NAME'])
+        if token is None:
+            token = _get_request_token()
         hed = {'Authorization': 'Bearer ' + token,
                'content-type': 'application/json'}
         contact_data = {
@@ -789,6 +798,162 @@ def create_app():
             'rum_environment': os.getenv('RUM_ENVIRONMENT'),
             'splunk_version': os.getenv('SPLUNK_VERSION', '0.0.1'),
         }
+
+    def _fetch_home_data(token):
+        token_data = decode_token(token)
+        display_name = token_data['name']
+        username = token_data['user']
+        account_id = token_data['acct']
+        hed = {'Authorization': 'Bearer ' + token}
+
+        api_calls = [
+            ApiCall(display_name=BALANCE_NAME,
+                    api_request=ApiRequest(url=f'{app.config["BALANCES_URI"]}/{account_id}',
+                                           headers=hed,
+                                           timeout=app.config['BACKEND_TIMEOUT']),
+                    logger=app.logger),
+            ApiCall(display_name=TRANSACTION_LIST_NAME,
+                    api_request=ApiRequest(url=f'{app.config["HISTORY_URI"]}/{account_id}',
+                                           headers=hed,
+                                           timeout=app.config['BACKEND_TIMEOUT']),
+                    logger=app.logger),
+            ApiCall(display_name=CONTACTS_NAME,
+                    api_request=ApiRequest(url=f'{app.config["CONTACTS_URI"]}/{username}',
+                                           headers=hed,
+                                           timeout=app.config['BACKEND_TIMEOUT']),
+                    logger=app.logger)
+        ]
+
+        api_response = {BALANCE_NAME: None,
+                        TRANSACTION_LIST_NAME: None,
+                        CONTACTS_NAME: []}
+
+        tracer = trace.get_tracer(__name__)
+        with TracedThreadPoolExecutor(tracer, max_workers=3) as executor:
+            future_to_api_call = {
+                executor.submit(api_call.make_call):
+                    api_call for api_call in api_calls
+            }
+
+            for future in concurrent.futures.as_completed(future_to_api_call):
+                if future.result():
+                    api_call = future_to_api_call[future]
+                    api_response[api_call.display_name] = future.result().json()
+
+        _populate_contact_labels(account_id,
+                                 api_response[TRANSACTION_LIST_NAME],
+                                 api_response[CONTACTS_NAME])
+
+        return {
+            'account_id': account_id,
+            'name': display_name,
+            'username': username,
+            'balance': api_response[BALANCE_NAME],
+            'history': api_response[TRANSACTION_LIST_NAME] or [],
+            'contacts': api_response[CONTACTS_NAME] or [],
+            'bank_name': os.getenv('BANK_NAME', 'Bank of Splunk'),
+            'local_routing_num': app.config['LOCAL_ROUTING'],
+        }
+
+    def _login_json(username, password):
+        try:
+            app.logger.debug('Mobile API login.')
+            req = requests.get(url=app.config["LOGIN_URI"],
+                               params={'username': username, 'password': password},
+                               timeout=app.config['BACKEND_TIMEOUT'] * 2)
+            req.raise_for_status()
+            token = req.json()['token']
+            claims = decode_token(token)
+            return {
+                'token': token,
+                'name': claims['name'],
+                'user': claims['user'],
+                'account_id': claims['acct'],
+            }
+        except (RequestException, HTTPError) as err:
+            app.logger.error('Mobile API login error: %s', str(err))
+            return None
+
+    def _signup_json(signup_data):
+        try:
+            app.logger.debug('Mobile API signup.')
+            resp = requests.post(url=app.config["USERSERVICE_URI"],
+                                 data=signup_data,
+                                 timeout=app.config['BACKEND_TIMEOUT'])
+            return resp.status_code == 201
+        except requests.exceptions.RequestException as err:
+            app.logger.error('Mobile API signup error: %s', str(err))
+            return False
+
+    def _submit_deposit_json(token, body, amount, txn_uuid):
+        account_id = decode_token(token)['acct']
+        use_new_account = body.get('use_new_account', False)
+        if use_new_account:
+            external_account_num = body.get('external_account_num', '').strip()
+            external_routing_num = body.get('external_routing_num', '').strip()
+            if external_routing_num == app.config['LOCAL_ROUTING']:
+                raise UserWarning('invalid routing number')
+            external_label = body.get('external_label')
+            if external_label:
+                _add_contact(external_label,
+                             external_account_num,
+                             external_routing_num,
+                             True,
+                             token=token)
+        else:
+            external_account_num = body.get('account_num', '').strip()
+            external_routing_num = body.get('routing_num', '').strip()
+            if not external_account_num or not external_routing_num:
+                raise UserWarning('account_num and routing_num are required')
+
+        transaction_data = {
+            'fromAccountNum': external_account_num,
+            'fromRoutingNum': external_routing_num,
+            'toAccountNum': account_id,
+            'toRoutingNum': app.config['LOCAL_ROUTING'],
+            'amount': amount,
+            'uuid': txn_uuid,
+        }
+        _submit_transaction(transaction_data, token=token)
+        return 'Deposit successful'
+
+    def _submit_payment_json(token, body, amount, txn_uuid):
+        account_id = decode_token(token)['acct']
+        use_new_recipient = body.get('use_new_recipient', False)
+        if use_new_recipient:
+            recipient = body.get('contact_account_num', '').strip()
+            label = body.get('contact_label')
+            if label:
+                _add_contact(label,
+                             recipient,
+                             app.config['LOCAL_ROUTING'],
+                             False,
+                             token=token)
+        else:
+            recipient = body.get('account_num', '').strip()
+            if not recipient:
+                raise UserWarning('account_num is required')
+
+        transaction_data = {
+            'fromAccountNum': account_id,
+            'fromRoutingNum': app.config['LOCAL_ROUTING'],
+            'toAccountNum': recipient,
+            'toRoutingNum': app.config['LOCAL_ROUTING'],
+            'amount': amount,
+            'uuid': txn_uuid,
+        }
+        _submit_transaction(transaction_data, token=token)
+        return 'Payment successful'
+
+    register_api_v1(app, {
+        'verify_token': verify_token,
+        'decode_token': decode_token,
+        'fetch_home_data': _fetch_home_data,
+        'login_json': _login_json,
+        'signup_json': _signup_json,
+        'submit_deposit_json': _submit_deposit_json,
+        'submit_payment_json': _submit_payment_json,
+    })
 
     return app
 
