@@ -57,6 +57,9 @@ Implemented in Python with Flask.
   - `USERSERVICE_API_ADDR`
     - the address and port of the `userservice`
 
+- RUM / DXA (browser):
+  - `RUM_REALM`, `RUM_AUTH`, `RUM_APP_NAME`, `RUM_ENVIRONMENT` — from `workshop-secret`; see root [`README.md`](/README.md) Digital Experience Analytics section for `data-trackid` attribute catalog and DXA event definition setup
+
 ### Kubernetes Resources
 
 - [deployments/frontend](/kubernetes-manifests/frontend.yaml)

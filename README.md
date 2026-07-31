@@ -202,13 +202,26 @@ You can run Bank of Splunk on a local Kubernetes cluster instead of GKE. The ins
 
    Build all services from source and load images directly into your local cluster — no GHCR credentials, no outbound image pulls, and no registry to run. This is the most secure default for local development and air-gapped environments.
 
+   For **backend APM** (in addition to browser RUM/DXA), install the Splunk OTel Collector before deploying the app. Use your Splunk Observability **access token** (not the RUM token):
+
+   ```sh
+   export SPLUNK_REALM=us0
+   export SPLUNK_ACCESS_TOKEN=<your-observability-access-token>
+   ./extras/local-k8s/install-splunk-otel-collector.sh
+   ```
+
+   Or set `SPLUNK_ACCESS_TOKEN` when running the deploy script below (it installs the collector automatically unless `SKIP_COLLECTOR=true`).
+
    The fastest path is the helper script (tested on k3d + Apple Silicon):
 
    ```sh
+   export SPLUNK_ACCESS_TOKEN=<your-observability-access-token>   # optional but required for APM
    ./extras/local-k8s/deploy-option-b.sh
    ```
 
    It builds the databases with Skaffold, builds the application images with Docker/Jib, imports them into k3d, and deploys the development overlays. Re-run with `SKIP_BUILD=true ./extras/local-k8s/deploy-option-b.sh` to redeploy without rebuilding.
+
+   After a full build, the script writes `.local-build-artifacts.json` at the repo root — a Skaffold-style manifest of the images that were built (`:local` tags for application services; SHA256 content tags for the database images, matching Skaffold's `tagPolicy: sha256` on the DB modules). This file is **local-only**: it is listed in `.gitignore`, regenerated on each Option B build, and is **not** read by CI, Cloud Build, or release scripts (those use ephemeral `artifacts.json` instead). It exists so you can inspect or wire local tooling against the exact tags from your last build without committing machine-specific hashes.
 
    **Manual equivalent** (if you prefer not to use the script):
 
@@ -294,7 +307,42 @@ You can run Bank of Splunk on a local Kubernetes cluster instead of GKE. The ins
 
    For kind / minikube / Docker Desktop, use that tool's cluster-delete command. To remove workloads without deleting the cluster, run `kubectl delete -f ./kubernetes-manifests` (Option A) or `skaffold delete --profile development` (Option B).
 
-> **Note on backend telemetry**: the deployments point `OTEL_EXPORTER_OTLP_ENDPOINT` at `http://<node-ip>:4317`, which assumes a Splunk OTel Collector agent is running on the node (see [`kubernetes-deployment/AB-VARIANT-DEPLOYMENT.md`](/kubernetes-deployment/AB-VARIANT-DEPLOYMENT.md)). On a bare local cluster without the collector, the browser RUM/DXA path still works end-to-end (it goes browser → Splunk directly), but backend OTLP traces from the Python/Java services will be dropped. Install the [Splunk OTel Collector Helm chart](https://github.com/signalfx/splunk-otel-collector-chart) if you want backend traces locally as well.
+> **Note on backend telemetry**: Option B dev overlays export OTLP to the node Splunk OTel Collector at `http://<node-ip>:4317`. Without the collector, browser **RUM and DXA still work** (browser → Splunk directly via `rum_token`), but **backend APM traces are dropped**. Install the collector with [`extras/local-k8s/install-splunk-otel-collector.sh`](/extras/local-k8s/install-splunk-otel-collector.sh) or let [`deploy-option-b.sh`](/extras/local-k8s/deploy-option-b.sh) install it when `SPLUNK_ACCESS_TOKEN` is set. See [`kubernetes-deployment/AB-VARIANT-DEPLOYMENT.md`](/kubernetes-deployment/AB-VARIANT-DEPLOYMENT.md) for multi-namespace A/B deployments.
+
+### Digital Experience Analytics (DXA)
+
+The frontend is instrumented for **Splunk RUM** and **Splunk DXA** using stable `data-*` attributes on interactive elements. DXA builds on RUM data — there is no separate browser agent.
+
+**Data attribute taxonomy** (low cardinality only; never put PII in attribute values):
+
+| Attribute | Purpose | Examples |
+|-----------|---------|----------|
+| `data-trackid` | Primary action ID for DXA event definitions | `login-submit`, `deposit-open`, `payment-submit` |
+| `data-component` | UI region / widget | `auth-form`, `deposit-modal`, `account-nav` |
+| `data-flow` | Funnel / journey name | `authentication`, `deposit`, `payment`, `registration` |
+
+Each page sets `data-trackid="{{ dxa_page }}"` on `<body>` (`home`, `login`, `signup`, `consent`). The RUM agent allowlists these attributes via `dataAttributesToCapture` in [`src/frontend/templates/shared/html_head.html`](/src/frontend/templates/shared/html_head.html).
+
+**Recommended DXA event definitions** (create in Observability Cloud → Digital Experience Analytics → Event Definitions, using the element picker):
+
+| Event | Filter |
+|-------|--------|
+| Login submitted | click + `data-trackid=login-submit` |
+| Deposit completed (intent) | click + `data-trackid=deposit-submit` |
+| Payment completed (intent) | click + `data-trackid=payment-submit` |
+| Registration started | click + `data-trackid=signup-navigate` |
+| Auth failure | custom event `auth.login_failed` |
+| Form validation issue | custom event `form.validation_failed` |
+
+**Verification checklist**:
+
+1. Collector ready: `kubectl get daemonset -n default splunk-otel-collector-agent`
+2. RUM click spans include `data-trackid` tags in Observability Cloud
+3. DXA element picker shows allowlisted attributes on tagged buttons
+4. Deposit submit links browser interaction span to `frontend` → downstream APM trace via shared trace ID
+5. Session replay masks balances, account numbers, and form inputs
+
+See [`src/frontend/README.md`](/src/frontend/README.md) for frontend service details.
 
 ## Additional deployment options
 

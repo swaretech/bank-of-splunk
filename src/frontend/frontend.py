@@ -33,14 +33,8 @@ from flask import Flask, abort, jsonify, make_response, redirect, \
     render_template, request, url_for
 
 from opentelemetry import trace
-# from opentelemetry.sdk.trace.export import BatchSpanProcessor
-# from opentelemetry.sdk.trace import TracerProvider
-# from opentelemetry.propagate import set_global_textmap
-# from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
-# from opentelemetry.propagators.cloud_trace_propagator import CloudTraceFormatPropagator
-# from opentelemetry.instrumentation.flask import FlaskInstrumentor
-# from opentelemetry.instrumentation.requests import RequestsInstrumentor
-# from opentelemetry.instrumentation.jinja2 import Jinja2Instrumentor
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
 # Local imports
 from api_call import ApiCall, ApiRequest
@@ -160,12 +154,8 @@ def create_app():
                                account_id=account_id,
                                balance=api_response[BALANCE_NAME],
                                bank_name=os.getenv('BANK_NAME', 'Bank of Splunk'),
-                               rum_realm=os.getenv('RUM_REALM','XX'),
-                               rum_auth=os.getenv('RUM_AUTH','not-found'),
-                               rum_app_name=os.getenv('RUM_APP_NAME','not-found'),
-                               rum_environment=os.getenv('RUM_ENVIRONMENT','not-found'),
+                               dxa_page='home',
                                splunk_env=os.getenv('ENV_PLATFORM','a-variant'),
-                               splunk_version=os.getenv('SPLUNK_VERSION',"0.0.1"),
                                cluster_name=cluster_name,
                                contacts=api_response[CONTACTS_NAME],
                                cymbal_logo=os.getenv('CYMBAL_LOGO', 'false'),
@@ -422,12 +412,8 @@ def create_app():
         return render_template('login.html',
                                app_name=app_name,
                                bank_name=os.getenv('BANK_NAME', 'Bank of Splunk'),
-                               rum_realm=os.getenv('RUM_REALM','XX'),
-                               rum_auth=os.getenv('RUM_AUTH','not-found'),
-                               rum_app_name=os.getenv('RUM_APP_NAME','not-found'),
-                               rum_environment=os.getenv('RUM_ENVIRONMENT','not-found'),
+                               dxa_page='login',
                                splunk_env=os.getenv('ENV_PLATFORM','a-variant'),
-                               splunk_version=os.getenv('SPLUNK_VERSION',"0.0.1"),
                                cluster_name=cluster_name,
                                cymbal_logo=os.getenv('CYMBAL_LOGO', 'false'),
                                default_password=os.getenv('DEFAULT_PASSWORD', ''),
@@ -510,12 +496,8 @@ def create_app():
             return render_template('consent.html',
                                     app_name=app_name,
                                     bank_name=os.getenv('BANK_NAME', 'Bank of Splunk'),
-                                    rum_realm=os.getenv('RUM_REALM','XX'),
-                                    rum_auth=os.getenv('RUM_AUTH','not-found'),
-                                    rum_app_name=os.getenv('RUM_APP_NAME','not-found'),
-                                    rum_environment=os.getenv('RUM_ENVIRONMENT','not-found'),
+                                    dxa_page='consent',
                                     splunk_env=os.getenv('ENV_PLATFORM','a-variant'),
-                                    splunk_version=os.getenv('SPLUNK_VERSION',"0.0.1"),
                                     cluster_name=cluster_name,
                                     cymbal_logo=os.getenv('CYMBAL_LOGO', 'false'),
                                     platform=platform,
@@ -586,12 +568,8 @@ def create_app():
                                     _scheme=app.config['SCHEME']))
         return render_template('signup.html',
                                bank_name=os.getenv('BANK_NAME', 'Bank of Splunk'),
-                               rum_realm=os.getenv('RUM_REALM','XX'),
-                               rum_auth=os.getenv('RUM_AUTH','not-found'),
-                               rum_app_name=os.getenv('RUM_APP_NAME','not-found'),
-                               rum_environment=os.getenv('RUM_ENVIRONMENT','not-found'),
+                               dxa_page='signup',
                                splunk_env=os.getenv('ENV_PLATFORM','a-variant'),
-                               splunk_version=os.getenv('SPLUNK_VERSION',"0.0.1"),
                                cluster_name=cluster_name,
                                cymbal_logo=os.getenv('CYMBAL_LOGO', 'false'),
                                platform=platform,
@@ -765,23 +743,12 @@ def create_app():
     logging.root.setLevel(os.environ.get('LOG_LEVEL', 'INFO').upper())
 
     app.logger.info('Starting frontend service.')
-    if trace.get_tracer_provider() is not None: # detecting  the 
-           app.logger.info("✅ Tracing enabled.")
-    # Set up tracing and export spans to Cloud Trace.
-    # if os.environ['ENABLE_TRACING'] == "true":
-    #     app.logger.info("✅ Tracing enabled.")
-    #     trace.set_tracer_provider(TracerProvider())
-    #     cloud_trace_exporter = CloudTraceSpanExporter()
-    #     trace.get_tracer_provider().add_span_processor(
-    #         BatchSpanProcessor(cloud_trace_exporter)
-    #     )
-    #     set_global_textmap(CloudTraceFormatPropagator())
-    #     # Add tracing auto-instrumentation for Flask, jinja and requests
-    #     FlaskInstrumentor().instrument_app(app)
-    #     RequestsInstrumentor().instrument()
-    #     Jinja2Instrumentor().instrument()
+    if trace.get_tracer_provider() is not None:
+        app.logger.info("Tracing enabled.")
+        FlaskInstrumentor().instrument_app(app)
+        RequestsInstrumentor().instrument()
     else:
-        app.logger.info("🚫 Tracing disabled.")
+        app.logger.info("Tracing disabled.")
 
     platform = os.getenv('ENV_PLATFORM', None)
     platform_display_name = None
@@ -810,6 +777,18 @@ def create_app():
                  platform_display_name = "B Variant"
     else:
         app.logger.info("ENV_PLATFORM environment variable is not set")
+
+    @app.context_processor
+    def inject_rum_context():
+        auth = os.getenv('RUM_AUTH', '')
+        return {
+            'rum_realm': os.getenv('RUM_REALM'),
+            'rum_auth': auth,
+            'rum_enabled': auth not in ('', 'not-found', 'disabled'),
+            'rum_app_name': os.getenv('RUM_APP_NAME'),
+            'rum_environment': os.getenv('RUM_ENVIRONMENT'),
+            'splunk_version': os.getenv('SPLUNK_VERSION', '0.0.1'),
+        }
 
     return app
 

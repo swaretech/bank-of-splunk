@@ -25,6 +25,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
     if(!depositForm.checkValidity() || document.querySelector("#deposit-amount").value <= 0.00){
       e.preventDefault();
       e.stopPropagation();
+      if (typeof BankRum !== 'undefined') {
+        BankRum.reportValidationFailed(depositForm);
+      }
+    } else if (typeof BankRum !== 'undefined') {
+      BankRum.reportSubmitStarted(depositForm, e.submitter);
     }
     depositForm.classList.add("was-validated");
   });
@@ -47,6 +52,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
     if(!paymentForm.checkValidity() || document.querySelector("#payment-amount").value <= 0.00){
       e.preventDefault();
       e.stopPropagation();
+      if (typeof BankRum !== 'undefined') {
+        BankRum.reportValidationFailed(paymentForm);
+      }
+    } else if (typeof BankRum !== 'undefined') {
+      BankRum.reportSubmitStarted(paymentForm, e.submitter);
     }
     paymentForm.classList.add("was-validated");
   });
@@ -69,6 +79,24 @@ document.addEventListener("DOMContentLoaded", function(event) {
   document.querySelector("#accounts").addEventListener("change", function(e) {
     RefreshModals();
   });
+
+  var depositModal = document.querySelector("#depositFunds");
+  if (depositModal) {
+    depositModal.addEventListener("shown.bs.modal", function () {
+      if (typeof BankRum !== 'undefined') {
+        BankRum.reportModalOpened('deposit');
+      }
+    });
+  }
+
+  var paymentModal = document.querySelector("#sendPayment");
+  if (paymentModal) {
+    paymentModal.addEventListener("shown.bs.modal", function () {
+      if (typeof BankRum !== 'undefined') {
+        BankRum.reportModalOpened('payment');
+      }
+    });
+  }
 
 
   function uuidv4() {

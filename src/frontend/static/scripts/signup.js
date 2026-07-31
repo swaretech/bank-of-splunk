@@ -28,7 +28,12 @@ document.addEventListener("DOMContentLoaded", function(e) {
       event.preventDefault();
       event.stopPropagation();
       if (!passwordsMatch) document.querySelector("#alertBanner").classList.remove("hidden");
+      if (typeof BankRum !== 'undefined') {
+        BankRum.reportValidationFailed(form);
+      }
       window.scrollTo({ top: 0, behavior: "auto" });
+    } else if (typeof BankRum !== 'undefined') {
+      BankRum.reportSubmitStarted(form, event.submitter);
     }
     form.classList.add("was-validated");
   });

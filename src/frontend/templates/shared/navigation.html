@@ -21,14 +21,15 @@
           <div class="justify-content-end collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
               <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {{ track('account-menu-open', 'account-nav', 'authentication') }}>
                   <span>
                       <span id="account-user-name">{{ name }}</span>
                   </span>
                 </a>
                 <div class="dropdown-menu" aria-labelledby="accountDropdown">
                   <form id="logout-form" method="POST" action="/logout">
-                    <a class="dropdown-item" onclick="document.querySelector('#logout-form').submit();">Sign out<i class="fa-icon-spacer fas fa-sign-out-alt"></i></a>
+{% from 'shared/dxa_macros.html' import track %}
+                    <a class="dropdown-item" onclick="document.querySelector('#logout-form').submit();" {{ track('logout-submit', 'account-nav', 'authentication') }}>Sign out<i class="fa-icon-spacer fas fa-sign-out-alt"></i></a>
                   </form>
                 </div>
               </li>

@@ -1,0 +1,11 @@
+# APM-focused local defaults for Option B (k3d). HEC/log forwarding omitted.
+operatorcrds:
+  install: true
+operator:
+  enabled: true
+agent:
+  service:
+    enabled: true
+splunkObservability:
+  profilingEnabled: false
+environment: local

@@ -1,0 +1,4 @@
+{# DXA-safe data attributes for Splunk Digital Experience Analytics element picker #}
+{% macro track(id, component=None, flow=None) -%}
+data-trackid="{{ id }}"{% if component %} data-component="{{ component }}"{% endif %}{% if flow %} data-flow="{{ flow }}"{% endif %}
+{%- endmacro %}

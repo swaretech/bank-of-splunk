@@ -16,38 +16,52 @@
     <link rel="stylesheet" href="static/styles/platform.css">
     <link rel="stylesheet" href="static/styles/platform/{{ platform }}.css">
   {% endif %}
-  {% if rum_realm is not none and rum_auth is not none %}
+  {% if rum_enabled %}
     <script src="https://cdn.observability.splunkcloud.com/o11y-gdi-rum/v3/splunk-otel-web.js" crossorigin="anonymous"></script>
     <script src="https://cdn.observability.splunkcloud.com/o11y-gdi-rum/v3/splunk-otel-web-session-recorder.js" crossorigin="anonymous"></script>
     <script>
-        var rum_realm = "{{ rum_realm }}";
-        var rum_auth = "{{ rum_auth }}";
-        var rum_app_name =  "{{ rum_app_name}}";
-        var rum_environment = "{{ rum_environment }}";
-        var splunk_version = "{{ splunk_version }}";
-
         SplunkRum.init({
-            realm: rum_realm,
-            rumAccessToken: rum_auth,
-            applicationName: rum_app_name,
-            version: splunk_version,
-            deploymentEnvironment: rum_environment,
+            realm: "{{ rum_realm }}",
+            rumAccessToken: "{{ rum_auth }}",
+            applicationName: "{{ rum_app_name }}",
+            version: "{{ splunk_version }}",
+            deploymentEnvironment: "{{ rum_environment }}",
             user: { trackingMode: 'anonymousTracking' },
+            dataAttributesToCapture: ['data-trackid', 'data-component', 'data-flow'],
+            globalAttributes: {
+                platform: "{{ platform or 'unknown' }}",
+            },
+            disableBots: true,
+            exporter: {
+                otlp: true,
+                onAttributesSerializing: function (attrs) {
+                    var blocked = /account|password|token|session|email|user/i;
+                    var sanitized = {};
+                    Object.keys(attrs || {}).forEach(function (key) {
+                        if (!blocked.test(key)) {
+                            sanitized[key] = attrs[key];
+                        }
+                    });
+                    return sanitized;
+                },
+            },
             privacy: {
                 maskAllText: true,
                 sensitivityRules: [
                     { rule: 'unmask', selector: 'h1, h2, h3, h4, h5, h6' },
-                    { rule: 'unmask', selector: 'button, .btn' },
+                    { rule: 'unmask', selector: 'button, .btn, .card-button' },
                     { rule: 'unmask', selector: '.navbar-brand, .nav-link, .dropdown-item' },
-                    { rule: 'mask', selector: '#account-user-name' }
-                ]
-            }
+                    { rule: 'mask', selector: '#account-user-name, .account-number, #current-balance' },
+                    { rule: 'mask', selector: 'input, select, textarea, .transaction-account, .transaction-amount' },
+                    { rule: 'exclude', selector: '#login-password, #signup-password, #signup-password-repeat' },
+                ],
+            },
         });
 
         SplunkSessionRecorder.init({
-            realm: rum_realm,
-            rumAccessToken: rum_auth,
+            realm: "{{ rum_realm }}",
+            rumAccessToken: "{{ rum_auth }}",
             recorder: 'splunk'
         });
     </script>
-    {% endif %}
+  {% endif %}

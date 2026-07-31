@@ -18,7 +18,8 @@ limitations under the License.
   <head>
 {% include 'shared/html_head.html' %}
   </head>
-  <body>
+  <body data-component="page" data-trackid="{{ dxa_page }}">
+{% from 'shared/dxa_macros.html' import track %}
 {% include 'shared/platform_banner.html' %}
 {% include 'shared/navigation.html' %}
     <!-- Main Content -->
@@ -51,9 +52,9 @@ limitations under the License.
                     <span class="error-icon mr-2 material-icons">error</span>Login failed.
                   </div>
                   {% if response_type == "code" %}
-                  <form id="login-form" class="needs-validation" novalidate="" method="POST" action="/login?response_type={{ response_type }}&state={{ state }}&redirect_uri={{ redirect_uri }}&app_name={{ app_name }}">
+                  <form id="login-form" class="needs-validation" novalidate="" method="POST" action="/login?response_type={{ response_type }}&state={{ state }}&redirect_uri={{ redirect_uri }}&app_name={{ app_name }}" data-trackid="login-form" data-component="auth-form" data-flow="authentication">
                   {% else %}
-                  <form id="login-form" class="needs-validation" novalidate="" method="POST" action="/login">
+                  <form id="login-form" class="needs-validation" novalidate="" method="POST" action="/login" data-trackid="login-form" data-component="auth-form" data-flow="authentication">
                   {% endif %}
                     <label class="text-uppercase text-muted secondary-text" for="username">Username</label>
                     <div class="input-group mt-2d mb-5">
@@ -75,11 +76,11 @@ limitations under the License.
                         Please enter your password.
                       </div>
                     </div>
-                    <button class="btn btn-sign-in btn-block mb-4" type="submit">Sign in</button>
+                    <button class="btn btn-sign-in btn-block mb-4" type="submit" {{ track('login-submit', 'auth-form', 'authentication') }}>Sign in</button>
                     <small class="text-uppercase secondary-text text-muted">
                       Not registered?
                     </small>
-                    <a href="/signup" class="btn btn-secondary btn-block mt-2 mb-4" id="create-account-btn" type="button">Create an Account</a>
+                    <a href="/signup" class="btn btn-secondary btn-block mt-2 mb-4" id="create-account-btn" type="button" {{ track('signup-navigate', 'auth-form', 'registration') }}>Create an Account</a>
                   </form>
                 </div>
               </div>

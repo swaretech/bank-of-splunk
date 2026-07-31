@@ -18,7 +18,8 @@ limitations under the License.
   <head>
 {% include 'shared/html_head.html' %}
   </head>
-  <body>
+  <body data-component="page" data-trackid="{{ dxa_page }}">
+{% from 'shared/dxa_macros.html' import track %}
 {% include 'shared/platform_banner.html' %}
 {% include 'shared/navigation.html' %}
     <!-- Main Content -->
@@ -36,7 +37,7 @@ limitations under the License.
             <div class="card-body">
               <div class="row mt-4">
                 <div class="col-10 offset-1 mb-2">
-                  <form id="signup-form" class="needs-validation" novalidate="" method="POST" action="/signup">
+                  <form id="signup-form" class="needs-validation" novalidate="" method="POST" action="/signup" data-trackid="signup-form" data-component="auth-form" data-flow="registration">
                     <h4 class="mb-4">Account Information</h4>
                     <div id="alertBanner" class="alert alert-danger mb-4 hidden" role="alert">
                       <span class="alert-icon mr-2 material-icons error-icon">error</span>Passwords don't match. Please try again.
@@ -297,7 +298,7 @@ limitations under the License.
 
                     <hr class="mb-4">
                     <div class="col-lg-10 offset-lg-1 sign-in">
-                      <button class="btn btn-block btn-primary" type="submit">Create Account</button>
+                      <button class="btn btn-block btn-primary" type="submit" {{ track('signup-submit', 'auth-form', 'registration') }}>Create Account</button>
                     </div>
                   </form>
                 </div>

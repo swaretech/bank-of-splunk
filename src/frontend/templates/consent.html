@@ -18,7 +18,8 @@ limitations under the License.
   <head>
 {% include 'shared/html_head.html' %}
   </head>
-  <body>
+  <body data-component="page" data-trackid="{{ dxa_page }}">
+{% from 'shared/dxa_macros.html' import track %}
 {% include 'shared/platform_banner.html' %}
 {% include 'shared/navigation.html' %}
     <!-- Main Content -->
@@ -36,9 +37,9 @@ limitations under the License.
             <div class="card-body sign-in">
               <div class="row align-items-center mt-2">
                 <div class="col-10 offset-1 mb-4">
-                  <form id="consent-form" class="needs-validation" novalidate="" method="POST">
-                    <button class="btn btn-sign-in btn-block mb-4" type="submit" formaction="/consent?consent=true&state={{ state }}&redirect_uri={{ redirect_uri }}">Approve</button>
-                    <button class="btn btn-deny btn-block mb-4" type="submit" formaction="/consent?consent=false&state={{ state }}&redirect_uri={{ redirect_uri }}">Deny</button>
+                  <form id="consent-form" class="needs-validation" novalidate="" method="POST" data-trackid="consent-form" data-component="auth-form" data-flow="authentication">
+                    <button class="btn btn-sign-in btn-block mb-4" type="submit" formaction="/consent?consent=true&state={{ state }}&redirect_uri={{ redirect_uri }}" {{ track('consent-approve', 'auth-form', 'authentication') }}>Approve</button>
+                    <button class="btn btn-deny btn-block mb-4" type="submit" formaction="/consent?consent=false&state={{ state }}&redirect_uri={{ redirect_uri }}" {{ track('consent-deny', 'auth-form', 'authentication') }}>Deny</button>
                   </form>
                 </div>
               </div>

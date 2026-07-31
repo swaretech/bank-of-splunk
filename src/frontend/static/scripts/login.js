@@ -21,6 +21,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
     if(!login.checkValidity()){
       e.preventDefault();
       e.stopPropagation();
+      if (typeof BankRum !== 'undefined') {
+        BankRum.reportValidationFailed(login);
+      }
+    } else if (typeof BankRum !== 'undefined') {
+      BankRum.reportSubmitStarted(login, e.submitter);
     }
     login.classList.add('was-validated');
   });
@@ -28,5 +33,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
   var showAlert = (window.location.search == "?msg=Login+Failed");
   if (showAlert){
       document.querySelector("#alertBanner").classList.remove("hidden");
+      if (typeof BankRum !== 'undefined') {
+        BankRum.reportLoginFailed();
+      }
   }
 });
