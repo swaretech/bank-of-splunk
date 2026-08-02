@@ -75,7 +75,7 @@ cd src/ios/BankOfSplunk
 cp Config/Secrets.xcconfig.example Config/Secrets.xcconfig
 ```
 
-Default `API_BASE_URL` is `http://127.0.0.1:8083`, which matches the port-forward above. Set `RUM_ACCESS_TOKEN = disabled` unless you have a Splunk RUM token.
+Default `API_BASE_URL` is `http://127.0.0.1:8083`, which matches the port-forward above. All Splunk RUM settings (`RUM_REALM`, `RUM_ACCESS_TOKEN`, `RUM_APP_NAME`, `RUM_ENVIRONMENT`) are read from `Secrets.xcconfig` only — set `RUM_ACCESS_TOKEN = disabled` there to run without telemetry.
 
 ### 4. Build and run
 
@@ -102,15 +102,16 @@ If the backend is already running, you only need steps 3–4 in **Local end-to-e
    cp Config/Secrets.xcconfig.example Config/Secrets.xcconfig
    ```
 
-2. Edit `Config/Secrets.xcconfig`:
+2. Edit `Config/Secrets.xcconfig` (sole source for RUM credentials):
 
    | Key | Description |
    |-----|-------------|
-   | `API_BASE_URL` | Frontend base URL (e.g. `http://127.0.0.1:8083` with port-forward) |
-   | `RUM_REALM` | Splunk realm (e.g. `us0`) |
+   | `RUM_REALM` | Splunk realm (e.g. `us0`, `us1`) |
    | `RUM_ACCESS_TOKEN` | RUM token from Observability Cloud, or `disabled` |
    | `RUM_APP_NAME` | `bank-of-splunk-ios` |
    | `RUM_ENVIRONMENT` | e.g. `bank-local` |
+
+   `Debug.xcconfig` / `Release.xcconfig` only override `API_BASE_URL` per build flavor (local vs production). After changing secrets, clean build in Xcode (**Product → Clean Build Folder**) so `Info.plist` picks up new values.
 
 ## Demo credentials
 
@@ -170,7 +171,7 @@ JWT is stored in the iOS Keychain and sent as `Authorization: Bearer`.
 
 - **SDK**: [SplunkAgent 2.0.6](https://github.com/signalfx/splunk-otel-ios) via Swift Package Manager
 - **Init**: [`BankOfSplunk/Observability/SplunkRUMConfiguration.swift`](BankOfSplunk/Observability/SplunkRUMConfiguration.swift)
-- **Modules**: URLSession network instrumentation, session replay (non-local envs), crash reporting
+- **Modules**: URLSession network instrumentation, session replay, crash reporting
 - **User tracking**: anonymous (`UserTrackingMode.anonymousTracking`)
 - **Navigation**: UIKit automated navigation is **disabled** (SwiftUI screens use explicit `ui.screen_view` / `ui.interaction` events instead)
 - **Privacy**: span interceptor redacts `Authorization` headers and query strings on HTTP spans; session replay uses Splunk RUM `SplunkRum.shared.sessionReplay.sensitivity` (via `.dxaSensitiveContent()`) on balances, PII fields, and transaction labels

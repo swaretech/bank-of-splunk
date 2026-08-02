@@ -45,8 +45,6 @@ enum SplunkRUMConfiguration {
 
     #if canImport(SplunkAgent)
     private static func configureSessionReplay(_ agent: SplunkRum) {
-        guard AppConfig.rumEnvironment != "bank-local" else { return }
-
         agent.sessionReplay.preferences.renderingMode = .native
         agent.sessionReplay.start()
     }
