@@ -75,7 +75,7 @@ cd src/ios/BankOfSplunk
 cp Config/Secrets.xcconfig.example Config/Secrets.xcconfig
 ```
 
-Default `API_BASE_URL` is `http://127.0.0.1:8083`, which matches the port-forward above. All Splunk RUM settings (`RUM_REALM`, `RUM_ACCESS_TOKEN`, `RUM_APP_NAME`, `RUM_ENVIRONMENT`) are read from `Secrets.xcconfig` only — set `RUM_ACCESS_TOKEN = disabled` there to run without telemetry.
+Default `API_BASE_URL` is `http://127.0.0.1:8083`, which matches the port-forward above. Splunk RUM settings are read from `Secrets.xcconfig` using keys that map to `AgentConfiguration` / `EndpointConfiguration` (`SPLUNK_RUM_REALM`, `SPLUNK_RUM_ACCESS_TOKEN`, `SPLUNK_RUM_APP_NAME`, `SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT`). Set `SPLUNK_RUM_ACCESS_TOKEN = disabled` to run without telemetry. App version uses standard iOS `MARKETING_VERSION` → `CFBundleShortVersionString` → `appVersion`.
 
 ### 4. Build and run
 
@@ -104,14 +104,17 @@ If the backend is already running, you only need steps 3–4 in **Local end-to-e
 
 2. Edit `Config/Secrets.xcconfig` (sole source for RUM credentials):
 
-   | Key | Description |
-   |-----|-------------|
-   | `RUM_REALM` | Splunk realm (e.g. `us0`, `us1`) |
-   | `RUM_ACCESS_TOKEN` | RUM token from Observability Cloud, or `disabled` |
-   | `RUM_APP_NAME` | `bank-of-splunk-ios` |
-   | `RUM_ENVIRONMENT` | e.g. `bank-local` |
+   | xcconfig key | Splunk `install()` parameter | RUM resource attribute | Description |
+   |-----|-----|-----|-------------|
+   | `SPLUNK_RUM_REALM` | `realm` | (ingest routing) | Splunk realm (e.g. `us0`, `us1`) |
+   | `SPLUNK_RUM_ACCESS_TOKEN` | `rumAccessToken` | (ingest auth) | RUM token from Observability Cloud, or `disabled` |
+   | `SPLUNK_RUM_APP_NAME` | `appName` | **`app`** | e.g. `bank-of-splunk-ios` — **UI filter uses `app`, not `app.name`** |
+   | `SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT` | `deploymentEnvironment` | **`deployment.environment`** | e.g. `bank-local` |
+   | `MARKETING_VERSION` | `appVersion` | **`app.version`** | Set here or in Xcode → General → Version |
 
-   `Debug.xcconfig` / `Release.xcconfig` only override `API_BASE_URL` per build flavor (local vs production). After changing secrets, clean build in Xcode (**Product → Clean Build Folder**) so `Info.plist` picks up new values.
+   Per the [iOS RUM data model](https://help.splunk.com/en/splunk-observability-cloud/manage-data/instrument-front-end-applications/instrument-mobile-and-web-applications-for-splunk-real-user-monitoring-rum/instrument-ios-applications-for-splunk-rum/splunk-rum-ios-agent-version-2.0.0-and-above/ios-rum-data-model), exported spans carry resource attributes `app`, `app.version`, and `deployment.environment`. There is no `app.name` resource attribute in the iOS agent.
+
+   `Debug.xcconfig` / `Release.xcconfig` only override `API_BASE_URL` per build flavor (local vs production). They do **not** override `MARKETING_VERSION` or Splunk keys. After changing secrets, clean build in Xcode (**Product → Clean Build Folder**) so `Info.plist` picks up new values.
 
 ## Demo credentials
 
@@ -185,7 +188,31 @@ After deploying with RUM enabled, verify in Observability Cloud:
 3. Confirm contact picker labels, balance, banner text, and transaction amounts are masked in replay.
 4. Open session details / custom events — confirm no username, account number, amount, or password values appear in attribute headers.
 
-Custom event and span attribute keys matching `user`, `email`, `account`, `password`, `token`, `session`, `routing`, `balance`, `amount`, `label`, `name`, `birthday`, `username`, `credential`, or `value` are stripped before export (aligned with the web app's `onAttributesSerializing` filter).
+Custom event attribute keys starting with `user`, `email`, `account`, `password`, `token`, `session`, `routing`, `balance`, `amount`, `label`, `name`, `birthday`, `username`, `credential`, or `value` are stripped before export. Span redaction preserves Splunk RUM system attributes such as **`session.id`** and **`screen.name`** (required for session grouping); only PII/secret keys like `http.request.body` and `authorization` are redacted.
+
+### Troubleshooting: sessions not visible in Observability Cloud
+
+1. **Clean rebuild after changing `Secrets.xcconfig`** — RUM credentials are baked into `Info.plist` at build time. After editing `SPLUNK_RUM_*` keys, run **Product → Clean Build Folder** and rebuild.
+2. **Check Xcode console on launch (Debug builds)** — filter for subsystem `com.splunk.bankofsplunk`. You should see:
+   - `Splunk RUM config loaded: realm=…, app=…, env=…`
+   - `Splunk RUM agent started (v2.2.3).`
+   If you see `Splunk RUM disabled: …`, fix the reason shown (missing token, `disabled`, or unresolved `$(SPLUNK_RUM_*)` placeholders).
+3. **Filter the RUM UI correctly** — local builds use resource attributes (not `app.name`):
+   - **`app`**: `bank-of-splunk-ios`
+   - **`deployment.environment`**: `bank-local`
+   - **Realm**: `us1` (must match `SPLUNK_RUM_REALM`)
+4. **Confirm span resources in Xcode console** — after launch you should see `app=bank-of-splunk-ios`, `app.version=1.2.0` (or your `MARKETING_VERSION`), not `app.name`. If `app.version` still shows `1.0.0`, clean build — an old `Debug.xcconfig` override may be cached in a prior build.
+5. **Use RUM for Mobile**, not Browser RUM — iOS sessions appear under Mobile instrumentation.
+6. **Allow export time** — the SDK batches and uploads via background URLSession; background the app or wait ~30s after interacting, then refresh the dashboard (last 15 minutes).
+7. **Verify ingest in Console (Debug builds)** — after launch, look for:
+   - `RUM ingest probe: POST …/v1/traces → HTTP 200` (token accepted)
+   - `HTTP 401` / `403` → token rejected; set `SPLUNK_RUM_ACCESS_TOKEN` to the same value as Kubernetes `workshop-secret` key `rum_token` / web `RUM_AUTH`
+   - OpenTelemetry span output under `com.splunk.rum` confirms recording; CFNetwork `OTLPBackgroundExporter` upload tasks confirm export is queued
+8. **Token must match web RUM** — iOS and browser RUM share the same RUM access token type. Copy from Observability Cloud → RUM setup, or from your cluster secret:
+   ```sh
+   kubectl get secret workshop-secret -o jsonpath='{.data.rum_token}' | base64 -d; echo
+   ```
+   Paste that value into `SPLUNK_RUM_ACCESS_TOKEN` in `Secrets.xcconfig`, then clean rebuild.
 
 ## Design system
 

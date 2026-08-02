@@ -17,21 +17,19 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>$(SPLUNK_VERSION)</string>
+	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>API_BASE_URL</key>
 	<string>$(API_BASE_URL)</string>
-	<key>RUM_REALM</key>
-	<string>$(RUM_REALM)</string>
-	<key>RUM_ACCESS_TOKEN</key>
-	<string>$(RUM_ACCESS_TOKEN)</string>
-	<key>RUM_APP_NAME</key>
-	<string>$(RUM_APP_NAME)</string>
-	<key>RUM_ENVIRONMENT</key>
-	<string>$(RUM_ENVIRONMENT)</string>
-	<key>SPLUNK_VERSION</key>
-	<string>$(SPLUNK_VERSION)</string>
+	<key>SplunkRumRealm</key>
+	<string>$(SPLUNK_RUM_REALM)</string>
+	<key>SplunkRumAccessToken</key>
+	<string>$(SPLUNK_RUM_ACCESS_TOKEN)</string>
+	<key>SplunkRumAppName</key>
+	<string>$(SPLUNK_RUM_APP_NAME)</string>
+	<key>SplunkRumDeploymentEnvironment</key>
+	<string>$(SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

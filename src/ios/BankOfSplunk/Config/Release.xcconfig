@@ -1,5 +1,5 @@
 #include "Secrets.xcconfig"
 
-// Build-flavor defaults only. RUM credentials come from Secrets.xcconfig.
+// Build-flavor defaults only. Splunk RUM credentials come from Secrets.xcconfig.
+// App version: set MARKETING_VERSION in Secrets.xcconfig or Xcode → General → Version.
 API_BASE_URL = https:/$()/eua-bank.splunko11y.com
-SPLUNK_VERSION = 1.0.0

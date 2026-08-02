@@ -2,10 +2,13 @@ import SwiftUI
 
 @main
 struct BankOfSplunkApp: App {
-    @StateObject private var auth = AuthStore()
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @StateObject private var auth: AuthStore
 
     init() {
+        // Install before AuthStore in case AppDelegate didFinishLaunching has not run yet.
         SplunkRUMConfiguration.install()
+        _auth = StateObject(wrappedValue: AuthStore())
     }
 
     var body: some Scene {

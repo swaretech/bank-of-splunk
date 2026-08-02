@@ -8,6 +8,7 @@ PROJECT = "BankOfSplunk"
 BUNDLE_ID = "com.splunk.bankofsplunk"
 
 SOURCES = [
+    "App/AppDelegate.swift",
     "App/BankOfSplunkApp.swift",
     "Core/Config/AppConfig.swift",
     "Core/Auth/KeychainStore.swift",
@@ -34,6 +35,7 @@ SOURCES = [
     "Observability/DXAIdentifiers.swift",
     "Observability/BankRum.swift",
     "Observability/SplunkRUMConfiguration.swift",
+    "Observability/RumIngestProbe.swift",
 ]
 
 # Stable 24-char hex IDs (Xcode requirement)
@@ -301,7 +303,7 @@ for cid, name, kind in [
         emit("\t\t\t\tGENERATE_INFOPLIST_FILE = NO;")
         emit(f"\t\t\t\tINFOPLIST_FILE = {PROJECT}/Info.plist;")
         emit("\t\t\t\tLD_RUNPATH_SEARCH_PATHS = (\"$(inherited)\", \"@executable_path/Frameworks\");")
-        emit("\t\t\t\tMARKETING_VERSION = 1.0;")
+        emit("\t\t\t\t// MARKETING_VERSION comes from Secrets.xcconfig via Debug/Release.xcconfig")
         emit(f"\t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = {BUNDLE_ID};")
         emit("\t\t\t\tPRODUCT_NAME = \"$(TARGET_NAME)\";")
         emit("\t\t\t\tSWIFT_EMIT_LOC_STRINGS = YES;")

@@ -6,19 +6,39 @@ import SplunkAgent
 #endif
 
 enum BankRum {
+    /// Splunk RUM / DXA span attributes that must never be redacted (required for session grouping).
+    private static let rumSystemSpanKeys: Set<String> = [
+        "session.id",
+        "screen.name",
+        "component",
+        "track.id",
+        "event.name",
+        "flow",
+        "operation",
+        "field",
+        "platform",
+        "app.channel",
+        "screen",
+    ]
+
     private static let blockedKeys = try! NSRegularExpression(
         pattern: "^(user|email|account|password|token|session|routing|balance|amount|label|name|birthday|firstname|lastname|username|credential|value)",
         options: [.caseInsensitive]
     )
 
+    /// PII / secret span keys. Uses word boundaries so `session.id` is not matched by `session`.
     private static let sensitiveSpanKeys = try! NSRegularExpression(
-        pattern: "(authorization|password|token|cookie|set-cookie|http\\.request\\.body|http\\.response\\.body|request\\.body|response\\.body|username|account|routing|balance|amount|credential|email|session|firstname|lastname|birthday|label|value)",
+        pattern: "\\b(authorization|password|token|cookie|set-cookie|username|account|routing|balance|amount|credential|email|firstname|lastname|birthday)\\b|http\\.request\\.body|http\\.response\\.body|request\\.body|response\\.body",
         options: [.caseInsensitive]
     )
 
     static var isEnabled: Bool {
         #if canImport(SplunkAgent)
-        return AppConfig.rumEnabled
+        guard AppConfig.rumEnabled else { return false }
+        if case .running = SplunkRum.shared.state.status {
+            return true
+        }
+        return false
         #else
         return false
         #endif
@@ -131,6 +151,12 @@ enum BankRum {
     static func redactSpanAttributes(_ attributes: [String: AttributeValue]) -> [String: AttributeValue] {
         var sanitized = attributes
         for key in attributes.keys {
+            if rumSystemSpanKeys.contains(key) {
+                continue
+            }
+            if key.hasPrefix("splunk.") || key.hasPrefix("otel.") {
+                continue
+            }
             let range = NSRange(key.startIndex..<key.endIndex, in: key)
             if sensitiveSpanKeys.firstMatch(in: key, options: [], range: range) != nil {
                 sanitized[key] = .string("redacted")
