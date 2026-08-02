@@ -1,6 +1,7 @@
 import Foundation
 
 #if canImport(SplunkAgent)
+import OpenTelemetryApi
 import SplunkAgent
 #endif
 

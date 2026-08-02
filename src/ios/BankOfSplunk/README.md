@@ -173,7 +173,7 @@ JWT is stored in the iOS Keychain and sent as `Authorization: Bearer`.
 - **Modules**: URLSession network instrumentation, session replay (non-local envs), crash reporting
 - **User tracking**: anonymous (`UserTrackingMode.anonymousTracking`)
 - **Navigation**: UIKit automated navigation is **disabled** (SwiftUI screens use explicit `ui.screen_view` / `ui.interaction` events instead)
-- **Privacy**: span interceptor redacts `Authorization` headers and query strings on HTTP spans; session replay uses `.sessionReplaySensitive()` on balances, PII fields, and transaction labels
+- **Privacy**: span interceptor redacts `Authorization` headers and query strings on HTTP spans; session replay uses Splunk RUM `SplunkRum.shared.sessionReplay.sensitivity` (via `.dxaSensitiveContent()`) on balances, PII fields, and transaction labels
 
 ## DXA instrumentation
 
@@ -184,7 +184,7 @@ Mobile DXA uses the same low-cardinality taxonomy as the web app. See [`BankOfSp
 | `data-trackid` | `accessibilityIdentifier` via `.dxaTrackID(...)` + `track.id` on custom events |
 | `data-component` | `component` on custom events (via `BankRum.dxaAttributes`) |
 | `data-flow` | `flow` on custom events (via `BankRum.dxaAttributes`) |
-| Sensitive content | `.dxaSensitiveContent()` → session replay masking |
+| Sensitive content | `.dxaSensitiveContent()` → Splunk RUM session replay sensitivity masking |
 
 ### Custom events (`BankRum.swift`)
 

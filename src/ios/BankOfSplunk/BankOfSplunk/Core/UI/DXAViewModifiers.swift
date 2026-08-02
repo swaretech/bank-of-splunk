@@ -1,7 +1,8 @@
 import SwiftUI
+import UIKit
 
-#if canImport(CiscoSessionReplay)
-import CiscoSessionReplay
+#if canImport(SplunkAgent)
+import SplunkAgent
 #endif
 
 extension View {
@@ -12,11 +13,7 @@ extension View {
 
     /// Hide sensitive content from Session Replay (maps to web replay masking).
     func dxaSensitiveContent() -> some View {
-        #if canImport(CiscoSessionReplay)
-        sessionReplaySensitive(true)
-        #else
-        self
-        #endif
+        modifier(SessionReplaySensitiveModifier())
     }
 
     /// Emit a low-cardinality DXA interaction event with component and flow.
@@ -32,3 +29,26 @@ extension View {
         )
     }
 }
+
+private struct SessionReplaySensitiveModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        #if canImport(SplunkAgent)
+        content.background(SessionReplaySensitiveMarker())
+        #else
+        content
+        #endif
+    }
+}
+
+#if canImport(SplunkAgent)
+private struct SessionReplaySensitiveMarker: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        UIView(frame: .zero)
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        // Splunk RUM sessionReplay.sensitivity API (Record iOS sessions docs).
+        SplunkRum.shared.sessionReplay.sensitivity[uiView] = true
+    }
+}
+#endif
