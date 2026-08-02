@@ -12,15 +12,17 @@
 		00000000000000000000012F /* AuthStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000067 /* AuthStore.swift */; };
 		000000000000000000000130 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000068 /* APIClient.swift */; };
 		000000000000000000000131 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000069 /* Models.swift */; };
-		000000000000000000000132 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006A /* LoginView.swift */; };
-		000000000000000000000133 /* SignupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006B /* SignupView.swift */; };
-		000000000000000000000134 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006C /* HomeView.swift */; };
-		000000000000000000000135 /* DepositView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* DepositView.swift */; };
-		000000000000000000000136 /* PaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006E /* PaymentView.swift */; };
-		000000000000000000000137 /* TransactionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006F /* TransactionListView.swift */; };
-		000000000000000000000138 /* DXAIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000070 /* DXAIdentifiers.swift */; };
-		000000000000000000000139 /* BankRum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000071 /* BankRum.swift */; };
-		00000000000000000000013A /* SplunkRUMConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000072 /* SplunkRUMConfiguration.swift */; };
+		000000000000000000000132 /* KeyboardToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006A /* KeyboardToolbar.swift */; };
+		000000000000000000000133 /* DXAViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006B /* DXAViewModifiers.swift */; };
+		000000000000000000000134 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006C /* LoginView.swift */; };
+		000000000000000000000135 /* SignupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* SignupView.swift */; };
+		000000000000000000000136 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006E /* HomeView.swift */; };
+		000000000000000000000137 /* DepositView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006F /* DepositView.swift */; };
+		000000000000000000000138 /* PaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000070 /* PaymentView.swift */; };
+		000000000000000000000139 /* TransactionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000071 /* TransactionListView.swift */; };
+		00000000000000000000013A /* DXAIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000072 /* DXAIdentifiers.swift */; };
+		00000000000000000000013B /* BankRum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000073 /* BankRum.swift */; };
+		00000000000000000000013C /* SplunkRUMConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000074 /* SplunkRUMConfiguration.swift */; };
 		000000000000000000000190 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000011 /* Assets.xcassets */; };
 		000000000000000000000014 /* SplunkAgent in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000013 /* SplunkAgent */; };
 /* End PBXBuildFile section */
@@ -35,15 +37,17 @@
 		000000000000000000000067 /* AuthStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthStore.swift; sourceTree = "<group>"; };
 		000000000000000000000068 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		000000000000000000000069 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		00000000000000000000006A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
-		00000000000000000000006B /* SignupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupView.swift; sourceTree = "<group>"; };
-		00000000000000000000006C /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		00000000000000000000006D /* DepositView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositView.swift; sourceTree = "<group>"; };
-		00000000000000000000006E /* PaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentView.swift; sourceTree = "<group>"; };
-		00000000000000000000006F /* TransactionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionListView.swift; sourceTree = "<group>"; };
-		000000000000000000000070 /* DXAIdentifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DXAIdentifiers.swift; sourceTree = "<group>"; };
-		000000000000000000000071 /* BankRum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankRum.swift; sourceTree = "<group>"; };
-		000000000000000000000072 /* SplunkRUMConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplunkRUMConfiguration.swift; sourceTree = "<group>"; };
+		00000000000000000000006A /* KeyboardToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardToolbar.swift; sourceTree = "<group>"; };
+		00000000000000000000006B /* DXAViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DXAViewModifiers.swift; sourceTree = "<group>"; };
+		00000000000000000000006C /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		00000000000000000000006D /* SignupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupView.swift; sourceTree = "<group>"; };
+		00000000000000000000006E /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		00000000000000000000006F /* DepositView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositView.swift; sourceTree = "<group>"; };
+		000000000000000000000070 /* PaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentView.swift; sourceTree = "<group>"; };
+		000000000000000000000071 /* TransactionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionListView.swift; sourceTree = "<group>"; };
+		000000000000000000000072 /* DXAIdentifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DXAIdentifiers.swift; sourceTree = "<group>"; };
+		000000000000000000000073 /* BankRum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankRum.swift; sourceTree = "<group>"; };
+		000000000000000000000074 /* SplunkRUMConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplunkRUMConfiguration.swift; sourceTree = "<group>"; };
 		000000000000000000000010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		000000000000000000000011 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -91,9 +95,9 @@
 			children = (
 				0000000000000000000001F4 /* App */,
 				0000000000000000000001F5 /* Core */,
-				0000000000000000000001FA /* Features */,
-				000000000000000000000201 /* Observability */,
-				000000000000000000000202 /* Resources */,
+				0000000000000000000001FB /* Features */,
+				000000000000000000000202 /* Observability */,
+				000000000000000000000203 /* Resources */,
 				000000000000000000000010 /* Info.plist */,
 			);
 			path = BankOfSplunk;
@@ -114,34 +118,35 @@
 				0000000000000000000001F6 /* Config */,
 				0000000000000000000001F9 /* Models */,
 				0000000000000000000001F8 /* Networking */,
+				0000000000000000000001FA /* UI */,
 			);
 			path = Core;
 			sourceTree = "<group>";
 		};
-		0000000000000000000001FA /* Features */ = {
+		0000000000000000000001FB /* Features */ = {
 			isa = PBXGroup;
 			children = (
-				0000000000000000000001FE /* Deposit */,
-				0000000000000000000001FD /* Home */,
-				0000000000000000000001FB /* Login */,
-				0000000000000000000001FF /* Payment */,
-				0000000000000000000001FC /* Signup */,
-				000000000000000000000200 /* Transactions */,
+				0000000000000000000001FF /* Deposit */,
+				0000000000000000000001FE /* Home */,
+				0000000000000000000001FC /* Login */,
+				000000000000000000000200 /* Payment */,
+				0000000000000000000001FD /* Signup */,
+				000000000000000000000201 /* Transactions */,
 			);
 			path = Features;
 			sourceTree = "<group>";
 		};
-		000000000000000000000201 /* Observability */ = {
+		000000000000000000000202 /* Observability */ = {
 			isa = PBXGroup;
 			children = (
-				000000000000000000000070 /* DXAIdentifiers.swift */,
-				000000000000000000000071 /* BankRum.swift */,
-				000000000000000000000072 /* SplunkRUMConfiguration.swift */,
+				000000000000000000000072 /* DXAIdentifiers.swift */,
+				000000000000000000000073 /* BankRum.swift */,
+				000000000000000000000074 /* SplunkRUMConfiguration.swift */,
 			);
 			path = Observability;
 			sourceTree = "<group>";
 		};
-		000000000000000000000202 /* Resources */ = {
+		000000000000000000000203 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
 				000000000000000000000011 /* Assets.xcassets */,
@@ -182,50 +187,59 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
-		0000000000000000000001FB /* Login */ = {
+		0000000000000000000001FA /* UI */ = {
 			isa = PBXGroup;
 			children = (
-				00000000000000000000006A /* LoginView.swift */,
+				00000000000000000000006A /* KeyboardToolbar.swift */,
+				00000000000000000000006B /* DXAViewModifiers.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001FC /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000006C /* LoginView.swift */,
 			);
 			path = Login;
 			sourceTree = "<group>";
 		};
-		0000000000000000000001FC /* Signup */ = {
+		0000000000000000000001FD /* Signup */ = {
 			isa = PBXGroup;
 			children = (
-				00000000000000000000006B /* SignupView.swift */,
+				00000000000000000000006D /* SignupView.swift */,
 			);
 			path = Signup;
 			sourceTree = "<group>";
 		};
-		0000000000000000000001FD /* Home */ = {
+		0000000000000000000001FE /* Home */ = {
 			isa = PBXGroup;
 			children = (
-				00000000000000000000006C /* HomeView.swift */,
+				00000000000000000000006E /* HomeView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
 		};
-		0000000000000000000001FE /* Deposit */ = {
+		0000000000000000000001FF /* Deposit */ = {
 			isa = PBXGroup;
 			children = (
-				00000000000000000000006D /* DepositView.swift */,
+				00000000000000000000006F /* DepositView.swift */,
 			);
 			path = Deposit;
 			sourceTree = "<group>";
 		};
-		0000000000000000000001FF /* Payment */ = {
+		000000000000000000000200 /* Payment */ = {
 			isa = PBXGroup;
 			children = (
-				00000000000000000000006E /* PaymentView.swift */,
+				000000000000000000000070 /* PaymentView.swift */,
 			);
 			path = Payment;
 			sourceTree = "<group>";
 		};
-		000000000000000000000200 /* Transactions */ = {
+		000000000000000000000201 /* Transactions */ = {
 			isa = PBXGroup;
 			children = (
-				00000000000000000000006F /* TransactionListView.swift */,
+				000000000000000000000071 /* TransactionListView.swift */,
 			);
 			path = Transactions;
 			sourceTree = "<group>";
@@ -297,15 +311,17 @@
 				00000000000000000000012F /* AuthStore.swift in Sources */,
 				000000000000000000000130 /* APIClient.swift in Sources */,
 				000000000000000000000131 /* Models.swift in Sources */,
-				000000000000000000000132 /* LoginView.swift in Sources */,
-				000000000000000000000133 /* SignupView.swift in Sources */,
-				000000000000000000000134 /* HomeView.swift in Sources */,
-				000000000000000000000135 /* DepositView.swift in Sources */,
-				000000000000000000000136 /* PaymentView.swift in Sources */,
-				000000000000000000000137 /* TransactionListView.swift in Sources */,
-				000000000000000000000138 /* DXAIdentifiers.swift in Sources */,
-				000000000000000000000139 /* BankRum.swift in Sources */,
-				00000000000000000000013A /* SplunkRUMConfiguration.swift in Sources */,
+				000000000000000000000132 /* KeyboardToolbar.swift in Sources */,
+				000000000000000000000133 /* DXAViewModifiers.swift in Sources */,
+				000000000000000000000134 /* LoginView.swift in Sources */,
+				000000000000000000000135 /* SignupView.swift in Sources */,
+				000000000000000000000136 /* HomeView.swift in Sources */,
+				000000000000000000000137 /* DepositView.swift in Sources */,
+				000000000000000000000138 /* PaymentView.swift in Sources */,
+				000000000000000000000139 /* TransactionListView.swift in Sources */,
+				00000000000000000000013A /* DXAIdentifiers.swift in Sources */,
+				00000000000000000000013B /* BankRum.swift in Sources */,
+				00000000000000000000013C /* SplunkRUMConfiguration.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

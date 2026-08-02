@@ -18,14 +18,26 @@ struct SignupView: View {
                 TextField("Username", text: $username)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                    .dxaTrackID(DXA.signupUsername)
+                    .dxaSensitiveContent()
                 SecureField("Password", text: $password)
+                    .dxaTrackID(DXA.signupPassword)
+                    .dxaSensitiveContent()
                 SecureField("Confirm Password", text: $passwordRepeat)
+                    .dxaTrackID(DXA.signupPasswordRepeat)
+                    .dxaSensitiveContent()
             }
 
             Section("Personal") {
                 TextField("First Name", text: $firstname)
+                    .dxaTrackID(DXA.signupFirstname)
+                    .dxaSensitiveContent()
                 TextField("Last Name", text: $lastname)
+                    .dxaTrackID(DXA.signupLastname)
+                    .dxaSensitiveContent()
                 TextField("Birthday (YYYY-MM-DD)", text: $birthday)
+                    .dxaTrackID(DXA.signupBirthday)
+                    .dxaSensitiveContent()
             }
 
             if let errorMessage {
@@ -37,12 +49,18 @@ struct SignupView: View {
 
             Section {
                 Button("Create Account", action: submit)
-                    .accessibilityIdentifier(DXA.signupSubmit)
+                    .dxaTrackID(DXA.signupSubmit)
             }
         }
+        .scrollDismissesKeyboard(.interactively)
+        .keyboardDoneToolbar()
         .navigationTitle("Sign Up")
         .onAppear {
-            BankRum.trackScreen(DXA.signupPage, flow: DXA.registrationFlow)
+            BankRum.trackScreen(
+                DXA.signupPage,
+                component: DXA.authFormComponent,
+                flow: DXA.registrationFlow
+            )
         }
     }
 
@@ -50,17 +68,31 @@ struct SignupView: View {
         errorMessage = nil
 
         guard !username.isEmpty else {
-            BankRum.reportValidationFailed(trackId: DXA.signupSubmit, field: "username")
+            BankRum.reportValidationFailed(
+                trackId: DXA.signupSubmit,
+                field: "username",
+                component: DXA.authFormComponent,
+                flow: DXA.registrationFlow
+            )
             errorMessage = "Username is required."
             return
         }
         guard password == passwordRepeat else {
-            BankRum.reportValidationFailed(trackId: DXA.signupSubmit, field: "password-repeat")
+            BankRum.reportValidationFailed(
+                trackId: DXA.signupSubmit,
+                field: "password-repeat",
+                component: DXA.authFormComponent,
+                flow: DXA.registrationFlow
+            )
             errorMessage = "Passwords do not match."
             return
         }
 
-        BankRum.reportSubmitStarted(trackId: DXA.signupSubmit)
+        BankRum.reportSubmitStarted(
+            trackId: DXA.signupSubmit,
+            component: DXA.authFormComponent,
+            flow: DXA.registrationFlow
+        )
 
         let payload: [String: String] = [
             "username": username,
@@ -77,6 +109,7 @@ struct SignupView: View {
                 dismiss()
             } catch {
                 errorMessage = error.localizedDescription
+                BankRum.reportAPIError(operation: "signup", error: error)
             }
         }
     }

@@ -39,9 +39,14 @@ struct HomeView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Sign out") {
+                    BankRum.reportInteraction(
+                        trackId: DXA.logoutSubmit,
+                        component: DXA.accountNavComponent,
+                        flow: nil
+                    )
                     Task { await auth.logout() }
                 }
-                .accessibilityIdentifier(DXA.logoutSubmit)
+                .dxaTrackID(DXA.logoutSubmit)
             }
         }
         .refreshable {
@@ -51,7 +56,7 @@ struct HomeView: View {
             await reload()
         }
         .onAppear {
-            BankRum.trackScreen(DXA.homePage)
+            BankRum.trackScreen(DXA.homePage, component: DXA.pageComponent)
         }
     }
 
@@ -67,8 +72,10 @@ struct HomeView: View {
             Text(data.accountId)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+                .dxaSensitiveContent()
             Text(CurrencyFormatter.format(cents: data.balance))
                 .font(.system(size: 36, weight: .bold))
+                .dxaSensitiveContent()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
@@ -84,14 +91,24 @@ struct HomeView: View {
             } label: {
                 ActionCard(title: "Deposit Funds", systemImage: "arrow.down.circle.fill")
             }
-            .accessibilityIdentifier(DXA.depositOpen)
+            .dxaTrackID(DXA.depositOpen)
+            .dxaInteraction(
+                trackId: DXA.depositOpen,
+                component: DXA.accountNavComponent,
+                flow: DXA.depositFlow
+            )
 
             NavigationLink {
                 PaymentView(homeData: data)
             } label: {
                 ActionCard(title: "Send Payment", systemImage: "arrow.up.circle.fill")
             }
-            .accessibilityIdentifier(DXA.paymentOpen)
+            .dxaTrackID(DXA.paymentOpen)
+            .dxaInteraction(
+                trackId: DXA.paymentOpen,
+                component: DXA.accountNavComponent,
+                flow: DXA.paymentFlow
+            )
         }
     }
 
@@ -108,6 +125,12 @@ struct HomeView: View {
                         accountId: data.accountId
                     )
                 }
+                .dxaTrackID(DXA.transactionsOpen)
+                .dxaInteraction(
+                    trackId: DXA.transactionsOpen,
+                    component: DXA.accountNavComponent,
+                    flow: nil
+                )
             }
 
             if data.history.isEmpty {
@@ -155,6 +178,7 @@ struct TransactionRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(transaction.accountLabel ?? "Transfer")
                     .font(.subheadline.weight(.semibold))
+                    .dxaSensitiveContent()
                 Text("\(TransactionFormatter.month(from: transaction.timestamp)) \(TransactionFormatter.day(from: transaction.timestamp))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -163,6 +187,7 @@ struct TransactionRow: View {
             Text(signedAmount)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(isCredit ? .green : .primary)
+                .dxaSensitiveContent()
         }
         .padding(.vertical, 8)
     }

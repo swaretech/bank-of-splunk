@@ -30,7 +30,9 @@ struct PaymentView: View {
                 if useNewRecipient {
                     TextField("Account Number", text: $contactAccountNum)
                         .keyboardType(.numberPad)
+                        .dxaSensitiveContent()
                     TextField("Label (optional)", text: $contactLabel)
+                        .dxaSensitiveContent()
                 } else {
                     Picker("Contact", selection: $selectedContact) {
                         Text("Select recipient").tag(Optional<Contact>.none)
@@ -44,9 +46,11 @@ struct PaymentView: View {
             Section("Amount") {
                 TextField("Amount (USD)", text: $amount)
                     .keyboardType(.decimalPad)
+                    .dxaSensitiveContent()
                 Text("Available: \(CurrencyFormatter.format(cents: homeData.balance))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .dxaSensitiveContent()
             }
 
             if let errorMessage {
@@ -59,14 +63,16 @@ struct PaymentView: View {
             Section {
                 Button("Send Payment", action: submit)
                     .disabled(isSubmitting)
-                    .accessibilityIdentifier(DXA.paymentSubmit)
+                    .dxaTrackID(DXA.paymentSubmit)
                 Button("Cancel", role: .cancel) {
                     BankRum.reportEvent("ui.screen_closed", attributes: ["screen": DXA.paymentPage])
                     dismiss()
                 }
-                .accessibilityIdentifier(DXA.paymentCancel)
+                .dxaTrackID(DXA.paymentCancel)
             }
         }
+        .scrollDismissesKeyboard(.interactively)
+        .keyboardDoneToolbar()
         .navigationTitle("Send Payment")
         .onAppear {
             selectedContact = internalContacts.first
@@ -79,14 +85,24 @@ struct PaymentView: View {
         errorMessage = nil
 
         guard let value = Decimal(string: amount), value > 0 else {
-            BankRum.reportValidationFailed(trackId: DXA.paymentSubmit, field: "amount")
+            BankRum.reportValidationFailed(
+                trackId: DXA.paymentSubmit,
+                field: "amount",
+                component: DXA.paymentScreenComponent,
+                flow: DXA.paymentFlow
+            )
             errorMessage = "Enter a valid amount greater than zero."
             return
         }
 
         let cents = (value * 100 as NSDecimalNumber).intValue
         if cents > homeData.balance {
-            BankRum.reportValidationFailed(trackId: DXA.paymentSubmit, field: "amount")
+            BankRum.reportValidationFailed(
+                trackId: DXA.paymentSubmit,
+                field: "amount",
+                component: DXA.paymentScreenComponent,
+                flow: DXA.paymentFlow
+            )
             errorMessage = "Amount exceeds available balance."
             return
         }
@@ -99,7 +115,12 @@ struct PaymentView: View {
 
         if useNewRecipient {
             guard !contactAccountNum.isEmpty else {
-                BankRum.reportValidationFailed(trackId: DXA.paymentSubmit, field: "contact_account_num")
+                BankRum.reportValidationFailed(
+                    trackId: DXA.paymentSubmit,
+                    field: "contact_account_num",
+                    component: DXA.paymentScreenComponent,
+                    flow: DXA.paymentFlow
+                )
                 errorMessage = "Recipient account number is required."
                 return
             }
@@ -109,14 +130,23 @@ struct PaymentView: View {
             }
         } else {
             guard let contact = selectedContact else {
-                BankRum.reportValidationFailed(trackId: DXA.paymentSubmit, field: "account_num")
+                BankRum.reportValidationFailed(
+                    trackId: DXA.paymentSubmit,
+                    field: "account_num",
+                    component: DXA.paymentScreenComponent,
+                    flow: DXA.paymentFlow
+                )
                 errorMessage = "Select a recipient."
                 return
             }
             payload["account_num"] = contact.accountNum
         }
 
-        BankRum.reportSubmitStarted(trackId: DXA.paymentSubmit)
+        BankRum.reportSubmitStarted(
+            trackId: DXA.paymentSubmit,
+            component: DXA.paymentScreenComponent,
+            flow: DXA.paymentFlow
+        )
         isSubmitting = true
 
         Task {
@@ -128,6 +158,7 @@ struct PaymentView: View {
                 dismiss()
             } catch {
                 errorMessage = error.localizedDescription
+                BankRum.reportAPIError(operation: "payment", error: error)
             }
         }
     }

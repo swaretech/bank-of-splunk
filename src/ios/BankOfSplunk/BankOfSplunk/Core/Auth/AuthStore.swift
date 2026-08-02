@@ -24,7 +24,10 @@ final class AuthStore: ObservableObject {
         isLoading = true
         defer { isLoading = false }
 
-        let response = try await APIClient.shared.login(username: username, password: password)
+        let response = try await APIClient.shared.login(
+            username: username.trimmingCharacters(in: .whitespacesAndNewlines),
+            password: password
+        )
         try applySession(response)
     }
 
@@ -83,6 +86,7 @@ final class HomeStore: ObservableObject {
             homeData = try await APIClient.shared.fetchHome(token: token)
         } catch {
             errorMessage = error.localizedDescription
+            BankRum.reportAPIError(operation: "fetch_home", error: error)
         }
     }
 }

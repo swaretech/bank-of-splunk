@@ -14,6 +14,8 @@ SOURCES = [
     "Core/Auth/AuthStore.swift",
     "Core/Networking/APIClient.swift",
     "Core/Models/Models.swift",
+    "Core/UI/KeyboardToolbar.swift",
+    "Core/UI/DXAViewModifiers.swift",
     "Features/Login/LoginView.swift",
     "Features/Signup/SignupView.swift",
     "Features/Home/HomeView.swift",

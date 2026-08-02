@@ -10,7 +10,7 @@ struct TransactionListView: View {
         }
         .navigationTitle("Transactions")
         .onAppear {
-            BankRum.trackScreen("transactions")
+            BankRum.trackScreen(DXA.transactionsPage, component: DXA.accountNavComponent)
         }
     }
 }

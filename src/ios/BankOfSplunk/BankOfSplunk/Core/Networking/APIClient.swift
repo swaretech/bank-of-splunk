@@ -132,8 +132,24 @@ final class APIClient {
             return data
         } catch let error as APIClientError {
             throw error
+        } catch let error as URLError {
+            throw APIClientError.network(friendlyNetworkError(error))
         } catch {
             throw APIClientError.network(error)
+        }
+    }
+
+    private func friendlyNetworkError(_ error: URLError) -> Error {
+        switch error.code {
+        case .cannotConnectToHost, .networkConnectionLost, .timedOut:
+            return APIClientError.serverError(
+                "Cannot reach \(AppConfig.apiBaseURL.absoluteString). "
+                    + "Start kubectl port-forward svc/frontend 8083:8083 and confirm the port matches API_BASE_URL."
+            )
+        case .notConnectedToInternet:
+            return APIClientError.serverError("No network connection.")
+        default:
+            return error
         }
     }
 

@@ -4,13 +4,99 @@ Native SwiftUI iOS client for Bank of Splunk with **Splunk RUM for Mobile** and 
 
 ## Requirements
 
+- [Docker Desktop](https://www.docker.com/) (running)
+- [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+- [`k3d`](https://k3d.io) — `brew install k3d`
+- [`skaffold`](https://skaffold.dev/docs/install/) 2.9+
+- OpenJDK 21+ and Maven (for Java microservices in Option B deploy)
 - Xcode 15+ (iOS 16 deployment target)
-- Running Bank of Splunk backend (see root [README](/README.md))
 - Splunk Observability Cloud RUM access token (optional; set `disabled` to run without telemetry)
 
-## Setup
+## Local end-to-end run
 
-1. Copy the secrets template:
+These steps start the Kubernetes backend from source, expose the mobile JSON API, and run the app in the iOS Simulator.
+
+### 1. Start the backend (first time)
+
+From the **repository root** (not this directory):
+
+```sh
+# Create a local cluster (once)
+k3d cluster create bank-of-splunk
+
+# Build images, load into k3d, and deploy all services
+./extras/local-k8s/deploy-option-b.sh
+```
+
+This uses Docker to build application images and Skaffold for the databases. Expect several minutes on first run. When finished, all pods should be `Running`:
+
+```sh
+kubectl --context k3d-bank-of-splunk get pods
+```
+
+Re-deploy after code changes without rebuilding everything:
+
+```sh
+SKIP_BUILD=true ./extras/local-k8s/deploy-option-b.sh
+```
+
+Rebuild only the frontend after mobile API changes:
+
+```sh
+docker build -t bank-of-splunk/frontend:local src/frontend
+k3d image import bank-of-splunk/frontend:local -c bank-of-splunk
+kubectl --context k3d-bank-of-splunk rollout restart deployment/frontend
+```
+
+See the root [README](/README.md) Quickstart for Option A (pre-built GHCR images), Apple Silicon notes, and tear-down (`k3d cluster delete bank-of-splunk`).
+
+### 2. Port-forward the frontend
+
+In a **separate terminal**, keep this running while you use the app:
+
+```sh
+kubectl --context k3d-bank-of-splunk port-forward service/frontend 8083:8083
+```
+
+Verify the mobile login API from your Mac:
+
+```sh
+curl -s -X POST http://127.0.0.1:8083/api/v1/login \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"testuser","password":"bankofsplunk"}'
+```
+
+You should get JSON with a `token` field.
+
+### 3. Configure the iOS app
+
+```sh
+cd src/ios/BankOfSplunk
+cp Config/Secrets.xcconfig.example Config/Secrets.xcconfig
+```
+
+Default `API_BASE_URL` is `http://127.0.0.1:8083`, which matches the port-forward above. Set `RUM_ACCESS_TOKEN = disabled` unless you have a Splunk RUM token.
+
+### 4. Build and run
+
+**Xcode:** open `BankOfSplunk.xcodeproj`, select an iPhone Simulator, press **⌘R**.
+
+**Command line:**
+
+```sh
+cd src/ios/BankOfSplunk
+xcodebuild -scheme BankOfSplunk -configuration Debug \
+  -destination 'platform=iOS Simulator,name=iPhone 17' build
+open BankOfSplunk.xcodeproj
+```
+
+Debug builds pre-fill `testuser` / `bankofsplunk` and show the API URL on the login screen.
+
+## Setup (reference)
+
+If the backend is already running, you only need steps 3–4 in **Local end-to-end run** above.
+
+1. Copy the secrets template (if you have not already):
 
    ```sh
    cp Config/Secrets.xcconfig.example Config/Secrets.xcconfig
@@ -26,14 +112,6 @@ Native SwiftUI iOS client for Bank of Splunk with **Splunk RUM for Mobile** and 
    | `RUM_APP_NAME` | `bank-of-splunk-ios` |
    | `RUM_ENVIRONMENT` | e.g. `bank-local` |
 
-3. Port-forward the frontend service:
-
-   ```sh
-   kubectl port-forward svc/frontend 8083:8083
-   ```
-
-4. Open `BankOfSplunk.xcodeproj` in Xcode and run on the Simulator.
-
 ## Demo credentials
 
 When the backend is deployed with demo data (`USE_DEMO_DATA=True` in [`kubernetes-manifests/config.yaml`](/kubernetes-manifests/config.yaml)), these pre-seeded accounts work for login:
@@ -45,6 +123,33 @@ When the backend is deployed with demo data (`USE_DEMO_DATA=True` in [`kubernete
 | `bob` | `bankofsplunk` |
 
 All demo users share the same password. See [`src/accounts/accounts-db/initdb/1-load-testdata.sql`](/src/accounts/accounts-db/initdb/1-load-testdata.sql) for the full seed set (`eve` is also available).
+
+## Troubleshooting login
+
+If sign-in fails, the login screen (Debug builds) shows the configured API URL at the bottom. Common causes:
+
+1. **Port-forward not running or wrong port** — the app expects `http://127.0.0.1:8083`. Run exactly:
+   ```sh
+   kubectl --context k3d-bank-of-splunk port-forward service/frontend 8083:8083
+   ```
+   If you use a different local port (e.g. `8084:8083`), update `API_BASE_URL` in `Config/Secrets.xcconfig` to match.
+
+2. **Frontend image missing `/api/v1`** — rebuild and redeploy the frontend after pulling the iOS/mobile API changes:
+   ```sh
+   extras/local-k8s/deploy-option-b.sh
+   ```
+
+3. **Verify the API from your Mac** (should return JSON with a token):
+   ```sh
+   curl -s -X POST http://127.0.0.1:8083/api/v1/login \
+     -H 'Content-Type: application/json' \
+     -d '{"username":"testuser","password":"bankofsplunk"}'
+   ```
+   A `401` here means bad credentials; connection refused means port-forward is down; `404` means the frontend needs redeploying.
+
+4. **Physical device** — `127.0.0.1` points at the phone, not your Mac. Set `API_BASE_URL` to your Mac's LAN IP (e.g. `http://192.168.1.10:8083`) and port-forward as above.
+
+5. **Simulator keyboard not visible** — if the field highlights but no on-screen keyboard appears, the Simulator may be using your Mac keyboard. Toggle **I/O → Keyboard → Toggle Software Keyboard** (or press **⌘K**). Uncheck **I/O → Keyboard → Connect Hardware Keyboard** for local testing.
 
 ## Architecture
 
@@ -65,28 +170,33 @@ JWT is stored in the iOS Keychain and sent as `Authorization: Bearer`.
 
 - **SDK**: [SplunkAgent 2.0.6](https://github.com/signalfx/splunk-otel-ios) via Swift Package Manager
 - **Init**: [`BankOfSplunk/Observability/SplunkRUMConfiguration.swift`](BankOfSplunk/Observability/SplunkRUMConfiguration.swift)
-- **Modules**: automated navigation, URLSession network instrumentation, session replay, crash reporting
-- **User tracking**: anonymous (DXA default)
+- **Modules**: URLSession network instrumentation, session replay (non-local envs), crash reporting
+- **User tracking**: anonymous (`UserTrackingMode.anonymousTracking`)
+- **Navigation**: UIKit automated navigation is **disabled** (SwiftUI screens use explicit `ui.screen_view` / `ui.interaction` events instead)
+- **Privacy**: span interceptor redacts `Authorization` headers and query strings on HTTP spans; session replay uses `.sessionReplaySensitive()` on balances, PII fields, and transaction labels
 
 ## DXA instrumentation
 
-Mobile DXA uses the same low-cardinality taxonomy as the web app. See [`BankOfSplunk/Observability/DXAIdentifiers.swift`](BankOfSplunk/Observability/DXAIdentifiers.swift).
+Mobile DXA uses the same low-cardinality taxonomy as the web app. See [`BankOfSplunk/Observability/DXAIdentifiers.swift`](BankOfSplunk/Observability/DXAIdentifiers.swift) and helpers in [`BankOfSplunk/Core/UI/DXAViewModifiers.swift`](BankOfSplunk/Core/UI/DXAViewModifiers.swift).
 
 | Web attribute | iOS equivalent |
 |---------------|----------------|
-| `data-trackid` | `accessibilityIdentifier` + `track.id` on custom events |
-| `data-component` | `component` on custom events |
-| `data-flow` | `flow` on custom events |
+| `data-trackid` | `accessibilityIdentifier` via `.dxaTrackID(...)` + `track.id` on custom events |
+| `data-component` | `component` on custom events (via `BankRum.dxaAttributes`) |
+| `data-flow` | `flow` on custom events (via `BankRum.dxaAttributes`) |
+| Sensitive content | `.dxaSensitiveContent()` → session replay masking |
 
 ### Custom events (`BankRum.swift`)
 
 | Event | When |
 |-------|------|
-| `form.validation_failed` | Client validation failure |
+| `form.validation_failed` | Client validation failure (`component`, `flow`, `track.id`) |
 | `form.submit_started` | Before API submit |
 | `auth.login_failed` | Login API failure |
 | `ui.screen_opened` | Deposit/payment screen opened |
 | `ui.screen_view` | Screen appear with DXA attrs |
+| `ui.interaction` | Explicit nav/submit taps (e.g. transactions, deposit, payment) |
+| `api.error` | Non-auth API failures (network/5xx) with `endpoint` + `status` |
 
 ### Recommended DXA event definitions
 
@@ -94,12 +204,14 @@ Create in Observability Cloud → Digital Experience Analytics → Event Definit
 
 | Event | Filter |
 |-------|--------|
-| Login submitted | interaction / custom + `track.id=login-submit` |
+| Login submitted | custom + `track.id=login-submit` or interaction + `track.id=login-submit` |
 | Deposit completed (intent) | `track.id=deposit-submit` |
 | Payment completed (intent) | `track.id=payment-submit` |
 | Registration started | `track.id=signup-navigate` |
+| View transactions | `track.id=transactions-open` |
 | Auth failure | custom event `auth.login_failed` |
 | Form validation issue | custom event `form.validation_failed` |
+| API error | custom event `api.error` |
 
 ### Source mapping (optional)
 

@@ -19,35 +19,36 @@ enum SplunkRUMConfiguration {
             appName: AppConfig.rumAppName,
             deploymentEnvironment: AppConfig.rumEnvironment
         )
+        .userConfiguration(UserConfiguration(trackingMode: .anonymousTracking))
         .globalAttributes(MutableAttributes(dictionary: [
             "platform": .string("ios"),
             "app.channel": .string("mobile"),
         ]))
         .spanInterceptor { incoming in
             var spanData = incoming
-            var attributes = spanData.attributes
-            if let urlValue = attributes["url.full"], case .string(let url) = urlValue {
-                attributes["url.full"] = .string(redactURL(url))
-            }
-            if let urlValue = attributes["http.url"], case .string(let url) = urlValue {
-                attributes["http.url"] = .string(redactURL(url))
-            }
-            return spanData.settingAttributes(attributes)
+            spanData = spanData.settingAttributes(
+                BankRum.redactSpanAttributes(spanData.attributes)
+            )
+            return spanData
         }
 
         do {
             let agent = try SplunkRum.install(with: agentConfiguration)
-            agent.navigation.preferences.enableAutomatedTracking = true
-            agent.sessionReplay.start()
+            // SwiftUI app: manual screen names only (avoid UIHostingController noise).
+            agent.navigation.preferences.enableAutomatedTracking = false
+            configureSessionReplay(agent)
         } catch {
             print("Unable to start Splunk RUM agent: \(error)")
         }
         #endif
     }
 
-    private static func redactURL(_ url: String) -> String {
-        guard var components = URLComponents(string: url) else { return "redacted" }
-        components.query = nil
-        return components.string ?? "redacted"
+    #if canImport(SplunkAgent)
+    private static func configureSessionReplay(_ agent: SplunkRum) {
+        guard AppConfig.rumEnvironment != "bank-local" else { return }
+
+        agent.sessionReplay.preferences.renderingMode = .native
+        agent.sessionReplay.start()
     }
+    #endif
 }

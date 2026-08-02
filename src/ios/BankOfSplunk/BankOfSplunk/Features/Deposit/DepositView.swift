@@ -31,9 +31,12 @@ struct DepositView: View {
                 if useNewAccount {
                     TextField("Account Number", text: $externalAccountNum)
                         .keyboardType(.numberPad)
+                        .dxaSensitiveContent()
                     TextField("Routing Number", text: $externalRoutingNum)
                         .keyboardType(.numberPad)
+                        .dxaSensitiveContent()
                     TextField("Label (optional)", text: $externalLabel)
+                        .dxaSensitiveContent()
                 } else {
                     Picker("Contact", selection: $selectedContact) {
                         Text("Select account").tag(Optional<Contact>.none)
@@ -47,6 +50,7 @@ struct DepositView: View {
             Section("Amount") {
                 TextField("Amount (USD)", text: $amount)
                     .keyboardType(.decimalPad)
+                    .dxaSensitiveContent()
             }
 
             if let errorMessage {
@@ -59,14 +63,16 @@ struct DepositView: View {
             Section {
                 Button("Deposit", action: submit)
                     .disabled(isSubmitting)
-                    .accessibilityIdentifier(DXA.depositSubmit)
+                    .dxaTrackID(DXA.depositSubmit)
                 Button("Cancel", role: .cancel) {
                     BankRum.reportEvent("ui.screen_closed", attributes: ["screen": DXA.depositPage])
                     dismiss()
                 }
-                .accessibilityIdentifier(DXA.depositCancel)
+                .dxaTrackID(DXA.depositCancel)
             }
         }
+        .scrollDismissesKeyboard(.interactively)
+        .keyboardDoneToolbar()
         .navigationTitle("Deposit Funds")
         .onAppear {
             selectedContact = externalContacts.first
@@ -79,7 +85,12 @@ struct DepositView: View {
         errorMessage = nil
 
         guard let value = Decimal(string: amount), value > 0 else {
-            BankRum.reportValidationFailed(trackId: DXA.depositSubmit, field: "amount")
+            BankRum.reportValidationFailed(
+                trackId: DXA.depositSubmit,
+                field: "amount",
+                component: DXA.depositScreenComponent,
+                flow: DXA.depositFlow
+            )
             errorMessage = "Enter a valid amount greater than zero."
             return
         }
@@ -92,7 +103,12 @@ struct DepositView: View {
 
         if useNewAccount {
             guard !externalAccountNum.isEmpty, !externalRoutingNum.isEmpty else {
-                BankRum.reportValidationFailed(trackId: DXA.depositSubmit, field: "external_account")
+                BankRum.reportValidationFailed(
+                    trackId: DXA.depositSubmit,
+                    field: "external_account",
+                    component: DXA.depositScreenComponent,
+                    flow: DXA.depositFlow
+                )
                 errorMessage = "External account and routing numbers are required."
                 return
             }
@@ -103,7 +119,12 @@ struct DepositView: View {
             }
         } else {
             guard let contact = selectedContact else {
-                BankRum.reportValidationFailed(trackId: DXA.depositSubmit, field: "account")
+                BankRum.reportValidationFailed(
+                    trackId: DXA.depositSubmit,
+                    field: "account",
+                    component: DXA.depositScreenComponent,
+                    flow: DXA.depositFlow
+                )
                 errorMessage = "Select an external account."
                 return
             }
@@ -111,7 +132,11 @@ struct DepositView: View {
             payload["routing_num"] = contact.routingNum
         }
 
-        BankRum.reportSubmitStarted(trackId: DXA.depositSubmit)
+        BankRum.reportSubmitStarted(
+            trackId: DXA.depositSubmit,
+            component: DXA.depositScreenComponent,
+            flow: DXA.depositFlow
+        )
         isSubmitting = true
 
         Task {
@@ -123,6 +148,7 @@ struct DepositView: View {
                 dismiss()
             } catch {
                 errorMessage = error.localizedDescription
+                BankRum.reportAPIError(operation: "deposit", error: error)
             }
         }
     }
