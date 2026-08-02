@@ -7,12 +7,12 @@ import SplunkAgent
 
 enum BankRum {
     private static let blockedKeys = try! NSRegularExpression(
-        pattern: "^(user|email|account|password|token|session)",
+        pattern: "^(user|email|account|password|token|session|routing|balance|amount|label|name|birthday|firstname|lastname|username|credential|value)",
         options: [.caseInsensitive]
     )
 
     private static let sensitiveSpanKeys = try! NSRegularExpression(
-        pattern: "(authorization|password|token|cookie|set-cookie)",
+        pattern: "(authorization|password|token|cookie|set-cookie|http\\.request\\.body|http\\.response\\.body|request\\.body|response\\.body|username|account|routing|balance|amount|credential|email|session|firstname|lastname|birthday|label|value)",
         options: [.caseInsensitive]
     )
 
@@ -70,6 +70,7 @@ enum BankRum {
         component: String? = nil,
         flow: String? = nil
     ) {
+        // Only field names are emitted — never user-entered values.
         var attrs = dxaAttributes(trackId: trackId, component: component ?? DXA.pageComponent, flow: flow)
         if let field {
             attrs["field"] = field
@@ -108,7 +109,7 @@ enum BankRum {
         attrs["operation"] = .string(operation)
         attrs["event.name"] = .string("api.error")
         SplunkRum.shared.customTracking.trackError(
-            "API error: \(operation)",
+            "API error during \(operation)",
             attrs
         )
         #endif

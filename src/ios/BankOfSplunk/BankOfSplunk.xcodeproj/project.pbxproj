@@ -14,15 +14,24 @@
 		000000000000000000000131 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000069 /* Models.swift */; };
 		000000000000000000000132 /* KeyboardToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006A /* KeyboardToolbar.swift */; };
 		000000000000000000000133 /* DXAViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006B /* DXAViewModifiers.swift */; };
-		000000000000000000000134 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006C /* LoginView.swift */; };
-		000000000000000000000135 /* SignupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* SignupView.swift */; };
-		000000000000000000000136 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006E /* HomeView.swift */; };
-		000000000000000000000137 /* DepositView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006F /* DepositView.swift */; };
-		000000000000000000000138 /* PaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000070 /* PaymentView.swift */; };
-		000000000000000000000139 /* TransactionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000071 /* TransactionListView.swift */; };
-		00000000000000000000013A /* DXAIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000072 /* DXAIdentifiers.swift */; };
-		00000000000000000000013B /* BankRum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000073 /* BankRum.swift */; };
-		00000000000000000000013C /* SplunkRUMConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000074 /* SplunkRUMConfiguration.swift */; };
+		000000000000000000000134 /* AppColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006C /* AppColors.swift */; };
+		000000000000000000000135 /* AppTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* AppTypography.swift */; };
+		000000000000000000000136 /* AppShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006E /* AppShape.swift */; };
+		000000000000000000000137 /* AppMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006F /* AppMotion.swift */; };
+		000000000000000000000138 /* M3Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000070 /* M3Button.swift */; };
+		000000000000000000000139 /* M3TextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000071 /* M3TextField.swift */; };
+		00000000000000000000013A /* M3Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000072 /* M3Card.swift */; };
+		00000000000000000000013B /* M3Banner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000073 /* M3Banner.swift */; };
+		00000000000000000000013C /* M3TransactionRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000074 /* M3TransactionRow.swift */; };
+		00000000000000000000013D /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000075 /* LoginView.swift */; };
+		00000000000000000000013E /* SignupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000076 /* SignupView.swift */; };
+		00000000000000000000013F /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000077 /* HomeView.swift */; };
+		000000000000000000000140 /* DepositView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000078 /* DepositView.swift */; };
+		000000000000000000000141 /* PaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000079 /* PaymentView.swift */; };
+		000000000000000000000142 /* TransactionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000007A /* TransactionListView.swift */; };
+		000000000000000000000143 /* DXAIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000007B /* DXAIdentifiers.swift */; };
+		000000000000000000000144 /* BankRum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000007C /* BankRum.swift */; };
+		000000000000000000000145 /* SplunkRUMConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000007D /* SplunkRUMConfiguration.swift */; };
 		000000000000000000000190 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000011 /* Assets.xcassets */; };
 		000000000000000000000014 /* SplunkAgent in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000013 /* SplunkAgent */; };
 /* End PBXBuildFile section */
@@ -39,15 +48,24 @@
 		000000000000000000000069 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		00000000000000000000006A /* KeyboardToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardToolbar.swift; sourceTree = "<group>"; };
 		00000000000000000000006B /* DXAViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DXAViewModifiers.swift; sourceTree = "<group>"; };
-		00000000000000000000006C /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
-		00000000000000000000006D /* SignupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupView.swift; sourceTree = "<group>"; };
-		00000000000000000000006E /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		00000000000000000000006F /* DepositView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositView.swift; sourceTree = "<group>"; };
-		000000000000000000000070 /* PaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentView.swift; sourceTree = "<group>"; };
-		000000000000000000000071 /* TransactionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionListView.swift; sourceTree = "<group>"; };
-		000000000000000000000072 /* DXAIdentifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DXAIdentifiers.swift; sourceTree = "<group>"; };
-		000000000000000000000073 /* BankRum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankRum.swift; sourceTree = "<group>"; };
-		000000000000000000000074 /* SplunkRUMConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplunkRUMConfiguration.swift; sourceTree = "<group>"; };
+		00000000000000000000006C /* AppColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppColors.swift; sourceTree = "<group>"; };
+		00000000000000000000006D /* AppTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTypography.swift; sourceTree = "<group>"; };
+		00000000000000000000006E /* AppShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShape.swift; sourceTree = "<group>"; };
+		00000000000000000000006F /* AppMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMotion.swift; sourceTree = "<group>"; };
+		000000000000000000000070 /* M3Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3Button.swift; sourceTree = "<group>"; };
+		000000000000000000000071 /* M3TextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3TextField.swift; sourceTree = "<group>"; };
+		000000000000000000000072 /* M3Card.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3Card.swift; sourceTree = "<group>"; };
+		000000000000000000000073 /* M3Banner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3Banner.swift; sourceTree = "<group>"; };
+		000000000000000000000074 /* M3TransactionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3TransactionRow.swift; sourceTree = "<group>"; };
+		000000000000000000000075 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		000000000000000000000076 /* SignupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupView.swift; sourceTree = "<group>"; };
+		000000000000000000000077 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		000000000000000000000078 /* DepositView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositView.swift; sourceTree = "<group>"; };
+		000000000000000000000079 /* PaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentView.swift; sourceTree = "<group>"; };
+		00000000000000000000007A /* TransactionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionListView.swift; sourceTree = "<group>"; };
+		00000000000000000000007B /* DXAIdentifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DXAIdentifiers.swift; sourceTree = "<group>"; };
+		00000000000000000000007C /* BankRum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankRum.swift; sourceTree = "<group>"; };
+		00000000000000000000007D /* SplunkRUMConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplunkRUMConfiguration.swift; sourceTree = "<group>"; };
 		000000000000000000000010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		000000000000000000000011 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -95,9 +113,9 @@
 			children = (
 				0000000000000000000001F4 /* App */,
 				0000000000000000000001F5 /* Core */,
-				0000000000000000000001FB /* Features */,
-				000000000000000000000202 /* Observability */,
-				000000000000000000000203 /* Resources */,
+				0000000000000000000001FD /* Features */,
+				000000000000000000000204 /* Observability */,
+				000000000000000000000205 /* Resources */,
 				000000000000000000000010 /* Info.plist */,
 			);
 			path = BankOfSplunk;
@@ -123,30 +141,30 @@
 			path = Core;
 			sourceTree = "<group>";
 		};
-		0000000000000000000001FB /* Features */ = {
+		0000000000000000000001FD /* Features */ = {
 			isa = PBXGroup;
 			children = (
-				0000000000000000000001FF /* Deposit */,
-				0000000000000000000001FE /* Home */,
-				0000000000000000000001FC /* Login */,
-				000000000000000000000200 /* Payment */,
-				0000000000000000000001FD /* Signup */,
-				000000000000000000000201 /* Transactions */,
+				000000000000000000000201 /* Deposit */,
+				000000000000000000000200 /* Home */,
+				0000000000000000000001FE /* Login */,
+				000000000000000000000202 /* Payment */,
+				0000000000000000000001FF /* Signup */,
+				000000000000000000000203 /* Transactions */,
 			);
 			path = Features;
 			sourceTree = "<group>";
 		};
-		000000000000000000000202 /* Observability */ = {
+		000000000000000000000204 /* Observability */ = {
 			isa = PBXGroup;
 			children = (
-				000000000000000000000072 /* DXAIdentifiers.swift */,
-				000000000000000000000073 /* BankRum.swift */,
-				000000000000000000000074 /* SplunkRUMConfiguration.swift */,
+				00000000000000000000007B /* DXAIdentifiers.swift */,
+				00000000000000000000007C /* BankRum.swift */,
+				00000000000000000000007D /* SplunkRUMConfiguration.swift */,
 			);
 			path = Observability;
 			sourceTree = "<group>";
 		};
-		000000000000000000000203 /* Resources */ = {
+		000000000000000000000205 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
 				000000000000000000000011 /* Assets.xcassets */,
@@ -190,58 +208,83 @@
 		0000000000000000000001FA /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				0000000000000000000001FC /* Components */,
+				0000000000000000000001FB /* Theme */,
 				00000000000000000000006A /* KeyboardToolbar.swift */,
 				00000000000000000000006B /* DXAViewModifiers.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
 		};
-		0000000000000000000001FC /* Login */ = {
+		0000000000000000000001FE /* Login */ = {
 			isa = PBXGroup;
 			children = (
-				00000000000000000000006C /* LoginView.swift */,
+				000000000000000000000075 /* LoginView.swift */,
 			);
 			path = Login;
 			sourceTree = "<group>";
 		};
-		0000000000000000000001FD /* Signup */ = {
+		0000000000000000000001FF /* Signup */ = {
 			isa = PBXGroup;
 			children = (
-				00000000000000000000006D /* SignupView.swift */,
+				000000000000000000000076 /* SignupView.swift */,
 			);
 			path = Signup;
 			sourceTree = "<group>";
 		};
-		0000000000000000000001FE /* Home */ = {
+		000000000000000000000200 /* Home */ = {
 			isa = PBXGroup;
 			children = (
-				00000000000000000000006E /* HomeView.swift */,
+				000000000000000000000077 /* HomeView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
 		};
-		0000000000000000000001FF /* Deposit */ = {
+		000000000000000000000201 /* Deposit */ = {
 			isa = PBXGroup;
 			children = (
-				00000000000000000000006F /* DepositView.swift */,
+				000000000000000000000078 /* DepositView.swift */,
 			);
 			path = Deposit;
 			sourceTree = "<group>";
 		};
-		000000000000000000000200 /* Payment */ = {
+		000000000000000000000202 /* Payment */ = {
 			isa = PBXGroup;
 			children = (
-				000000000000000000000070 /* PaymentView.swift */,
+				000000000000000000000079 /* PaymentView.swift */,
 			);
 			path = Payment;
 			sourceTree = "<group>";
 		};
-		000000000000000000000201 /* Transactions */ = {
+		000000000000000000000203 /* Transactions */ = {
 			isa = PBXGroup;
 			children = (
-				000000000000000000000071 /* TransactionListView.swift */,
+				00000000000000000000007A /* TransactionListView.swift */,
 			);
 			path = Transactions;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001FB /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000006C /* AppColors.swift */,
+				00000000000000000000006D /* AppTypography.swift */,
+				00000000000000000000006E /* AppShape.swift */,
+				00000000000000000000006F /* AppMotion.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		0000000000000000000001FC /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000070 /* M3Button.swift */,
+				000000000000000000000071 /* M3TextField.swift */,
+				000000000000000000000072 /* M3Card.swift */,
+				000000000000000000000073 /* M3Banner.swift */,
+				000000000000000000000074 /* M3TransactionRow.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -313,15 +356,24 @@
 				000000000000000000000131 /* Models.swift in Sources */,
 				000000000000000000000132 /* KeyboardToolbar.swift in Sources */,
 				000000000000000000000133 /* DXAViewModifiers.swift in Sources */,
-				000000000000000000000134 /* LoginView.swift in Sources */,
-				000000000000000000000135 /* SignupView.swift in Sources */,
-				000000000000000000000136 /* HomeView.swift in Sources */,
-				000000000000000000000137 /* DepositView.swift in Sources */,
-				000000000000000000000138 /* PaymentView.swift in Sources */,
-				000000000000000000000139 /* TransactionListView.swift in Sources */,
-				00000000000000000000013A /* DXAIdentifiers.swift in Sources */,
-				00000000000000000000013B /* BankRum.swift in Sources */,
-				00000000000000000000013C /* SplunkRUMConfiguration.swift in Sources */,
+				000000000000000000000134 /* AppColors.swift in Sources */,
+				000000000000000000000135 /* AppTypography.swift in Sources */,
+				000000000000000000000136 /* AppShape.swift in Sources */,
+				000000000000000000000137 /* AppMotion.swift in Sources */,
+				000000000000000000000138 /* M3Button.swift in Sources */,
+				000000000000000000000139 /* M3TextField.swift in Sources */,
+				00000000000000000000013A /* M3Card.swift in Sources */,
+				00000000000000000000013B /* M3Banner.swift in Sources */,
+				00000000000000000000013C /* M3TransactionRow.swift in Sources */,
+				00000000000000000000013D /* LoginView.swift in Sources */,
+				00000000000000000000013E /* SignupView.swift in Sources */,
+				00000000000000000000013F /* HomeView.swift in Sources */,
+				000000000000000000000140 /* DepositView.swift in Sources */,
+				000000000000000000000141 /* PaymentView.swift in Sources */,
+				000000000000000000000142 /* TransactionListView.swift in Sources */,
+				000000000000000000000143 /* DXAIdentifiers.swift in Sources */,
+				000000000000000000000144 /* BankRum.swift in Sources */,
+				000000000000000000000145 /* SplunkRUMConfiguration.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -431,7 +483,7 @@
 			repositoryURL = "https://github.com/signalfx/splunk-otel-ios";
 			requirement = {
 				kind = exactVersion;
-				version = 2.0.6;
+				version = 2.2.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

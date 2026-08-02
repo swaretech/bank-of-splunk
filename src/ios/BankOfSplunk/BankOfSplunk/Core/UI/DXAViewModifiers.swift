@@ -16,6 +16,14 @@ extension View {
         modifier(SessionReplaySensitiveModifier())
     }
 
+    /// Mark an entire form section (and all child inputs) as session-replay sensitive.
+    func dxaSensitiveFormSection() -> some View {
+        Group {
+            self
+        }
+        .dxaSensitiveContent()
+    }
+
     /// Emit a low-cardinality DXA interaction event with component and flow.
     func dxaInteraction(
         trackId: String,
@@ -47,7 +55,6 @@ private struct SessionReplaySensitiveMarker: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
-        // Splunk RUM sessionReplay.sensitivity API (Record iOS sessions docs).
         SplunkRum.shared.sessionReplay.sensitivity[uiView] = true
     }
 }

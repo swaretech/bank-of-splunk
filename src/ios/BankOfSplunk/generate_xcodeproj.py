@@ -16,6 +16,15 @@ SOURCES = [
     "Core/Models/Models.swift",
     "Core/UI/KeyboardToolbar.swift",
     "Core/UI/DXAViewModifiers.swift",
+    "Core/UI/Theme/AppColors.swift",
+    "Core/UI/Theme/AppTypography.swift",
+    "Core/UI/Theme/AppShape.swift",
+    "Core/UI/Theme/AppMotion.swift",
+    "Core/UI/Components/M3Button.swift",
+    "Core/UI/Components/M3TextField.swift",
+    "Core/UI/Components/M3Card.swift",
+    "Core/UI/Components/M3Banner.swift",
+    "Core/UI/Components/M3TransactionRow.swift",
     "Features/Login/LoginView.swift",
     "Features/Signup/SignupView.swift",
     "Features/Home/HomeView.swift",
@@ -329,7 +338,7 @@ emit("\t\t\tisa = XCRemoteSwiftPackageReference;")
 emit("\t\t\trepositoryURL = \"https://github.com/signalfx/splunk-otel-ios\";")
 emit("\t\t\trequirement = {")
 emit("\t\t\t\tkind = exactVersion;")
-emit("\t\t\t\tversion = 2.0.6;")
+emit("\t\t\t\tversion = 2.2.3;")
 emit("\t\t\t};")
 emit("\t\t};")
 emit("/* End XCRemoteSwiftPackageReference section */")

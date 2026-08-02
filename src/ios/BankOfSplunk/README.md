@@ -169,12 +169,35 @@ JWT is stored in the iOS Keychain and sent as `Authorization: Bearer`.
 
 ## Splunk RUM
 
-- **SDK**: [SplunkAgent 2.0.6](https://github.com/signalfx/splunk-otel-ios) via Swift Package Manager
+- **SDK**: [SplunkAgent 2.2.3](https://github.com/signalfx/splunk-otel-ios) via Swift Package Manager
 - **Init**: [`BankOfSplunk/Observability/SplunkRUMConfiguration.swift`](BankOfSplunk/Observability/SplunkRUMConfiguration.swift)
 - **Modules**: URLSession network instrumentation, session replay, crash reporting
 - **User tracking**: anonymous (`UserTrackingMode.anonymousTracking`)
 - **Navigation**: UIKit automated navigation is **disabled** (SwiftUI screens use explicit `ui.screen_view` / `ui.interaction` events instead)
-- **Privacy**: span interceptor redacts `Authorization` headers and query strings on HTTP spans; session replay uses Splunk RUM `SplunkRum.shared.sessionReplay.sensitivity` (via `.dxaSensitiveContent()`) on balances, PII fields, and transaction labels
+- **Privacy**: span interceptor redacts `Authorization` headers, request/response bodies, and query strings on HTTP spans; session replay uses `SplunkRum.shared.sessionReplay.sensitivity` (via `.dxaSensitiveContent()` and `.dxaSensitiveFormSection()`) on all input fields, balances, PII, contact pickers, banners, and error messages
+
+### Session Replay privacy verification
+
+After deploying with RUM enabled, verify in Observability Cloud:
+
+1. Record a session through Login → Home → Deposit with typed values.
+2. Confirm input areas show masked/blurred blocks during typing (keystrokes and values not visible).
+3. Confirm contact picker labels, balance, banner text, and transaction amounts are masked in replay.
+4. Open session details / custom events — confirm no username, account number, amount, or password values appear in attribute headers.
+
+Custom event and span attribute keys matching `user`, `email`, `account`, `password`, `token`, `session`, `routing`, `balance`, `amount`, `label`, `name`, `birthday`, `username`, `credential`, or `value` are stripped before export (aligned with the web app's `onAttributesSerializing` filter).
+
+## Design system
+
+The app uses a **Material 3-inspired** SwiftUI design system with deep purple (`#4F378B`) as the primary brand color.
+
+| Layer | Location |
+|-------|----------|
+| Color, typography, shape, motion tokens | [`BankOfSplunk/Core/UI/Theme/`](BankOfSplunk/Core/UI/Theme/) |
+| Reusable M3 components (buttons, fields, cards, banner, transaction rows) | [`BankOfSplunk/Core/UI/Components/`](BankOfSplunk/Core/UI/Components/) |
+| Accent color asset | [`BankOfSplunk/Resources/Assets.xcassets/AccentColor.colorset`](BankOfSplunk/Resources/Assets.xcassets/AccentColor.colorset/) |
+
+All six screens (Login, Signup, Home, Deposit, Payment, Transactions) use the shared components with M3 surface containers, filled/outlined buttons, spring animations, and adaptive light/dark palettes.
 
 ## DXA instrumentation
 
@@ -185,7 +208,7 @@ Mobile DXA uses the same low-cardinality taxonomy as the web app. See [`BankOfSp
 | `data-trackid` | `accessibilityIdentifier` via `.dxaTrackID(...)` + `track.id` on custom events |
 | `data-component` | `component` on custom events (via `BankRum.dxaAttributes`) |
 | `data-flow` | `flow` on custom events (via `BankRum.dxaAttributes`) |
-| Sensitive content | `.dxaSensitiveContent()` → Splunk RUM session replay sensitivity masking |
+| Sensitive content | `.dxaSensitiveContent()` / `.dxaSensitiveFormSection()` → Splunk RUM session replay sensitivity masking |
 
 ### Custom events (`BankRum.swift`)
 

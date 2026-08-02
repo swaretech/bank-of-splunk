@@ -20,57 +20,83 @@ struct DepositView: View {
     }
 
     var body: some View {
-        Form {
-            Section("From Account") {
-                Picker("Source", selection: $useNewAccount) {
-                    Text("Existing External Account").tag(false)
-                    Text("New External Account").tag(true)
-                }
-                .pickerStyle(.segmented)
+        ScrollView {
+            VStack(spacing: 20) {
+                M3Card(title: "From Account") {
+                    VStack(spacing: 16) {
+                        Picker("Source", selection: $useNewAccount) {
+                            Text("Existing External Account").tag(false)
+                            Text("New External Account").tag(true)
+                        }
+                        .pickerStyle(.segmented)
+                        .tint(AppColors.primary)
 
-                if useNewAccount {
-                    TextField("Account Number", text: $externalAccountNum)
-                        .keyboardType(.numberPad)
-                        .dxaSensitiveContent()
-                    TextField("Routing Number", text: $externalRoutingNum)
-                        .keyboardType(.numberPad)
-                        .dxaSensitiveContent()
-                    TextField("Label (optional)", text: $externalLabel)
-                        .dxaSensitiveContent()
-                } else {
-                    Picker("Contact", selection: $selectedContact) {
-                        Text("Select account").tag(Optional<Contact>.none)
-                        ForEach(externalContacts) { contact in
-                            Text(contact.displayLabel).tag(Optional(contact))
+                        if useNewAccount {
+                            M3TextField(
+                                label: "Account Number",
+                                text: $externalAccountNum,
+                                keyboardType: .numberPad
+                            )
+                            .dxaSensitiveContent()
+
+                            M3TextField(
+                                label: "Routing Number",
+                                text: $externalRoutingNum,
+                                keyboardType: .numberPad
+                            )
+                            .dxaSensitiveContent()
+
+                            M3TextField(label: "Label (optional)", text: $externalLabel)
+                                .dxaSensitiveContent()
+                        } else {
+                            Picker("Contact", selection: $selectedContact) {
+                                Text("Select account").tag(Optional<Contact>.none)
+                                ForEach(externalContacts) { contact in
+                                    Text(contact.displayLabel).tag(Optional(contact))
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .tint(AppColors.primary)
                         }
                     }
                 }
-            }
+                .dxaSensitiveFormSection()
 
-            Section("Amount") {
-                TextField("Amount (USD)", text: $amount)
-                    .keyboardType(.decimalPad)
+                M3Card(title: "Amount") {
+                    M3TextField(
+                        label: "Amount (USD)",
+                        text: $amount,
+                        systemImage: "dollarsign.circle",
+                        keyboardType: .decimalPad
+                    )
                     .dxaSensitiveContent()
-            }
-
-            if let errorMessage {
-                Section {
-                    Text(errorMessage)
-                        .foregroundStyle(.red)
                 }
-            }
+                .dxaSensitiveFormSection()
 
-            Section {
-                Button("Deposit", action: submit)
-                    .disabled(isSubmitting)
+                if let errorMessage {
+                    M3ErrorText(message: errorMessage)
+                        .m3ErrorTransition(isVisible: true)
+                }
+
+                VStack(spacing: 12) {
+                    M3FilledButton(
+                        title: "Deposit",
+                        isLoading: isSubmitting,
+                        isDisabled: isSubmitting,
+                        action: submit
+                    )
                     .dxaTrackID(DXA.depositSubmit)
-                Button("Cancel", role: .cancel) {
-                    BankRum.reportEvent("ui.screen_closed", attributes: ["screen": DXA.depositPage])
-                    dismiss()
+
+                    M3TextButton(title: "Cancel") {
+                        BankRum.reportEvent("ui.screen_closed", attributes: ["screen": DXA.depositPage])
+                        dismiss()
+                    }
+                    .dxaTrackID(DXA.depositCancel)
                 }
-                .dxaTrackID(DXA.depositCancel)
             }
+            .padding()
         }
+        .background(AppColors.surface)
         .scrollDismissesKeyboard(.interactively)
         .keyboardDoneToolbar()
         .navigationTitle("Deposit Funds")

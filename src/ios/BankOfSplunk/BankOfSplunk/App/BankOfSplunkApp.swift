@@ -12,6 +12,7 @@ struct BankOfSplunkApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(auth)
+                .tint(AppColors.primary)
         }
     }
 }
@@ -28,6 +29,7 @@ struct RootView: View {
                     LoginView()
                 }
             }
+            .animation(AppMotion.standardSpring, value: auth.isAuthenticated)
         }
     }
 }

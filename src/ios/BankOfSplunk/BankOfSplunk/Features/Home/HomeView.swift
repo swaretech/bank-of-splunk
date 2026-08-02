@@ -3,38 +3,44 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var auth: AuthStore
     @StateObject private var homeStore = HomeStore()
+    @State private var showBanner = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                if let banner = auth.bannerMessage {
-                    Text(banner)
-                        .font(.footnote)
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.green.opacity(0.15))
-                        .cornerRadius(8)
-                        .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-                                auth.clearBanner()
-                            }
+                if showBanner, let banner = auth.bannerMessage {
+                    M3Banner(message: banner) {
+                        withAnimation(AppMotion.standardSpring) {
+                            showBanner = false
                         }
+                        auth.clearBanner()
+                    }
+                    .dxaSensitiveContent()
+                    .transition(.move(edge: .top).combined(with: .opacity))
                 }
 
                 if homeStore.isLoading && homeStore.homeData == nil {
                     ProgressView("Loading account…")
+                        .font(AppTypography.bodyMedium)
+                        .foregroundStyle(AppColors.onSurfaceVariant)
                         .frame(maxWidth: .infinity, minHeight: 200)
                 } else if let data = homeStore.homeData {
                     overviewSection(data)
+                        .transition(.opacity.combined(with: .offset(y: 8)))
+
                     actionCards(data)
+                        .transition(.opacity.combined(with: .offset(y: 8)))
+
                     transactionSection(data)
+                        .transition(.opacity.combined(with: .offset(y: 8)))
                 } else if let error = homeStore.errorMessage {
-                    Text(error)
-                        .foregroundStyle(.red)
+                    M3ErrorText(message: error)
                 }
             }
             .padding()
+            .animation(AppMotion.standardSpring, value: homeStore.homeData?.accountId)
         }
+        .background(AppColors.surface)
         .navigationTitle(dataTitle)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -46,6 +52,8 @@ struct HomeView: View {
                     )
                     Task { await auth.logout() }
                 }
+                .font(AppTypography.labelLarge)
+                .foregroundStyle(AppColors.primary)
                 .dxaTrackID(DXA.logoutSubmit)
             }
         }
@@ -57,6 +65,18 @@ struct HomeView: View {
         }
         .onAppear {
             BankRum.trackScreen(DXA.homePage, component: DXA.pageComponent)
+            if auth.bannerMessage != nil {
+                showBanner = true
+                scheduleBannerDismiss()
+            }
+        }
+        .onChange(of: auth.bannerMessage) { newValue in
+            if newValue != nil {
+                withAnimation(AppMotion.standardSpring) {
+                    showBanner = true
+                }
+                scheduleBannerDismiss()
+            }
         }
     }
 
@@ -66,21 +86,18 @@ struct HomeView: View {
 
     @ViewBuilder
     private func overviewSection(_ data: HomeData) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Checking Account")
-                .font(.headline)
-            Text(data.accountId)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .dxaSensitiveContent()
-            Text(CurrencyFormatter.format(cents: data.balance))
-                .font(.system(size: 36, weight: .bold))
-                .dxaSensitiveContent()
+        M3Card(title: "Checking Account") {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(data.accountId)
+                    .font(AppTypography.bodyMedium)
+                    .foregroundStyle(AppColors.onSurfaceVariant)
+                    .dxaSensitiveContent()
+                Text(CurrencyFormatter.format(cents: data.balance))
+                    .font(AppTypography.displayMedium)
+                    .foregroundStyle(AppColors.primary)
+                    .dxaSensitiveContent()
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
     }
 
     @ViewBuilder
@@ -89,7 +106,7 @@ struct HomeView: View {
             NavigationLink {
                 DepositView(homeData: data)
             } label: {
-                ActionCard(title: "Deposit Funds", systemImage: "arrow.down.circle.fill")
+                M3ActionTile(title: "Deposit Funds", systemImage: "arrow.down.circle.fill")
             }
             .dxaTrackID(DXA.depositOpen)
             .dxaInteraction(
@@ -101,7 +118,7 @@ struct HomeView: View {
             NavigationLink {
                 PaymentView(homeData: data)
             } label: {
-                ActionCard(title: "Send Payment", systemImage: "arrow.up.circle.fill")
+                M3ActionTile(title: "Send Payment", systemImage: "arrow.up.circle.fill")
             }
             .dxaTrackID(DXA.paymentOpen)
             .dxaInteraction(
@@ -117,7 +134,8 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Recent Transactions")
-                    .font(.headline)
+                    .font(AppTypography.titleMedium)
+                    .foregroundStyle(AppColors.onSurface)
                 Spacer()
                 NavigationLink("See all") {
                     TransactionListView(
@@ -125,6 +143,8 @@ struct HomeView: View {
                         accountId: data.accountId
                     )
                 }
+                .font(AppTypography.labelLarge)
+                .foregroundStyle(AppColors.primary)
                 .dxaTrackID(DXA.transactionsOpen)
                 .dxaInteraction(
                     trackId: DXA.transactionsOpen,
@@ -135,10 +155,19 @@ struct HomeView: View {
 
             if data.history.isEmpty {
                 Text("No transactions yet.")
-                    .foregroundStyle(.secondary)
+                    .font(AppTypography.bodyMedium)
+                    .foregroundStyle(AppColors.onSurfaceVariant)
             } else {
-                ForEach(Array(data.history.prefix(5))) { transaction in
-                    TransactionRow(transaction: transaction, accountId: data.accountId)
+                M3Card {
+                    VStack(spacing: 0) {
+                        ForEach(Array(data.history.prefix(5))) { transaction in
+                            M3TransactionRow(transaction: transaction, accountId: data.accountId)
+                            if transaction.id != data.history.prefix(5).last?.id {
+                                Divider()
+                                    .background(AppColors.outlineVariant)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -148,56 +177,13 @@ struct HomeView: View {
         guard let token = auth.token else { return }
         await homeStore.load(token: token)
     }
-}
 
-private struct ActionCard: View {
-    let title: String
-    let systemImage: String
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: systemImage)
-                .font(.title)
-            Text(title)
-                .font(.footnote.weight(.semibold))
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, minHeight: 100)
-        .padding()
-        .background(Color.accentColor.opacity(0.12))
-        .cornerRadius(12)
-    }
-}
-
-struct TransactionRow: View {
-    let transaction: Transaction
-    let accountId: String
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(transaction.accountLabel ?? "Transfer")
-                    .font(.subheadline.weight(.semibold))
-                    .dxaSensitiveContent()
-                Text("\(TransactionFormatter.month(from: transaction.timestamp)) \(TransactionFormatter.day(from: transaction.timestamp))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+    private func scheduleBannerDismiss() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+            withAnimation(AppMotion.standardSpring) {
+                showBanner = false
             }
-            Spacer()
-            Text(signedAmount)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(isCredit ? .green : .primary)
-                .dxaSensitiveContent()
+            auth.clearBanner()
         }
-        .padding(.vertical, 8)
-    }
-
-    private var isCredit: Bool {
-        transaction.toAccountNum == accountId
-    }
-
-    private var signedAmount: String {
-        let cents = isCredit ? transaction.amount : -transaction.amount
-        return CurrencyFormatter.format(cents: cents)
     }
 }

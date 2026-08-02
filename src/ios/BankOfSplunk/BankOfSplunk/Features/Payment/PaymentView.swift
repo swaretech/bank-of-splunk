@@ -19,58 +19,83 @@ struct PaymentView: View {
     }
 
     var body: some View {
-        Form {
-            Section("Recipient") {
-                Picker("Recipient", selection: $useNewRecipient) {
-                    Text("Existing Recipient").tag(false)
-                    Text("New Recipient").tag(true)
-                }
-                .pickerStyle(.segmented)
+        ScrollView {
+            VStack(spacing: 20) {
+                M3Card(title: "Recipient") {
+                    VStack(spacing: 16) {
+                        Picker("Recipient", selection: $useNewRecipient) {
+                            Text("Existing Recipient").tag(false)
+                            Text("New Recipient").tag(true)
+                        }
+                        .pickerStyle(.segmented)
+                        .tint(AppColors.primary)
 
-                if useNewRecipient {
-                    TextField("Account Number", text: $contactAccountNum)
-                        .keyboardType(.numberPad)
-                        .dxaSensitiveContent()
-                    TextField("Label (optional)", text: $contactLabel)
-                        .dxaSensitiveContent()
-                } else {
-                    Picker("Contact", selection: $selectedContact) {
-                        Text("Select recipient").tag(Optional<Contact>.none)
-                        ForEach(internalContacts) { contact in
-                            Text(contact.displayLabel).tag(Optional(contact))
+                        if useNewRecipient {
+                            M3TextField(
+                                label: "Account Number",
+                                text: $contactAccountNum,
+                                keyboardType: .numberPad
+                            )
+                            .dxaSensitiveContent()
+
+                            M3TextField(label: "Label (optional)", text: $contactLabel)
+                                .dxaSensitiveContent()
+                        } else {
+                            Picker("Contact", selection: $selectedContact) {
+                                Text("Select recipient").tag(Optional<Contact>.none)
+                                ForEach(internalContacts) { contact in
+                                    Text(contact.displayLabel).tag(Optional(contact))
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .tint(AppColors.primary)
                         }
                     }
                 }
-            }
+                .dxaSensitiveFormSection()
 
-            Section("Amount") {
-                TextField("Amount (USD)", text: $amount)
-                    .keyboardType(.decimalPad)
-                    .dxaSensitiveContent()
-                Text("Available: \(CurrencyFormatter.format(cents: homeData.balance))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .dxaSensitiveContent()
-            }
+                M3Card(title: "Amount") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        M3TextField(
+                            label: "Amount (USD)",
+                            text: $amount,
+                            systemImage: "dollarsign.circle",
+                            keyboardType: .decimalPad
+                        )
+                        .dxaSensitiveContent()
 
-            if let errorMessage {
-                Section {
-                    Text(errorMessage)
-                        .foregroundStyle(.red)
+                        Text("Available: \(CurrencyFormatter.format(cents: homeData.balance))")
+                            .font(AppTypography.bodySmall)
+                            .foregroundStyle(AppColors.onSurfaceVariant)
+                            .dxaSensitiveContent()
+                    }
                 }
-            }
+                .dxaSensitiveFormSection()
 
-            Section {
-                Button("Send Payment", action: submit)
-                    .disabled(isSubmitting)
+                if let errorMessage {
+                    M3ErrorText(message: errorMessage)
+                        .m3ErrorTransition(isVisible: true)
+                }
+
+                VStack(spacing: 12) {
+                    M3FilledButton(
+                        title: "Send Payment",
+                        isLoading: isSubmitting,
+                        isDisabled: isSubmitting,
+                        action: submit
+                    )
                     .dxaTrackID(DXA.paymentSubmit)
-                Button("Cancel", role: .cancel) {
-                    BankRum.reportEvent("ui.screen_closed", attributes: ["screen": DXA.paymentPage])
-                    dismiss()
+
+                    M3TextButton(title: "Cancel") {
+                        BankRum.reportEvent("ui.screen_closed", attributes: ["screen": DXA.paymentPage])
+                        dismiss()
+                    }
+                    .dxaTrackID(DXA.paymentCancel)
                 }
-                .dxaTrackID(DXA.paymentCancel)
             }
+            .padding()
         }
+        .background(AppColors.surface)
         .scrollDismissesKeyboard(.interactively)
         .keyboardDoneToolbar()
         .navigationTitle("Send Payment")

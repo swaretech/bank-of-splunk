@@ -13,45 +13,64 @@ struct SignupView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        Form {
-            Section("Account") {
-                TextField("Username", text: $username)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .dxaTrackID(DXA.signupUsername)
-                    .dxaSensitiveContent()
-                SecureField("Password", text: $password)
-                    .dxaTrackID(DXA.signupPassword)
-                    .dxaSensitiveContent()
-                SecureField("Confirm Password", text: $passwordRepeat)
-                    .dxaTrackID(DXA.signupPasswordRepeat)
-                    .dxaSensitiveContent()
-            }
+        ScrollView {
+            VStack(spacing: 20) {
+                M3Card(title: "Account") {
+                    VStack(spacing: 16) {
+                        M3TextField(
+                            label: "Username",
+                            text: $username,
+                            systemImage: "person.circle",
+                            autocapitalization: .never
+                        )
+                        .dxaTrackID(DXA.signupUsername)
+                        .dxaSensitiveContent()
 
-            Section("Personal") {
-                TextField("First Name", text: $firstname)
-                    .dxaTrackID(DXA.signupFirstname)
-                    .dxaSensitiveContent()
-                TextField("Last Name", text: $lastname)
-                    .dxaTrackID(DXA.signupLastname)
-                    .dxaSensitiveContent()
-                TextField("Birthday (YYYY-MM-DD)", text: $birthday)
-                    .dxaTrackID(DXA.signupBirthday)
-                    .dxaSensitiveContent()
-            }
+                        M3SecureField(label: "Password", text: $password)
+                            .dxaTrackID(DXA.signupPassword)
+                            .dxaSensitiveContent()
 
-            if let errorMessage {
-                Section {
-                    Text(errorMessage)
-                        .foregroundStyle(.red)
+                        M3SecureField(label: "Confirm Password", text: $passwordRepeat)
+                            .dxaTrackID(DXA.signupPasswordRepeat)
+                            .dxaSensitiveContent()
+                    }
                 }
-            }
+                .dxaSensitiveFormSection()
 
-            Section {
-                Button("Create Account", action: submit)
+                M3Card(title: "Personal") {
+                    VStack(spacing: 16) {
+                        M3TextField(label: "First Name", text: $firstname, systemImage: "person")
+                            .dxaTrackID(DXA.signupFirstname)
+                            .dxaSensitiveContent()
+
+                        M3TextField(label: "Last Name", text: $lastname, systemImage: "person")
+                            .dxaTrackID(DXA.signupLastname)
+                            .dxaSensitiveContent()
+
+                        M3TextField(
+                            label: "Birthday (YYYY-MM-DD)",
+                            text: $birthday,
+                            systemImage: "calendar"
+                        )
+                        .dxaTrackID(DXA.signupBirthday)
+                        .dxaSensitiveContent()
+                    }
+                }
+                .dxaSensitiveFormSection()
+
+                if let errorMessage {
+                    M3ErrorText(message: errorMessage)
+                        .m3ErrorTransition(isVisible: true)
+                        .padding(.horizontal, 4)
+                }
+
+                M3FilledButton(title: "Create Account", action: submit)
                     .dxaTrackID(DXA.signupSubmit)
+                    .padding(.top, 4)
             }
+            .padding()
         }
+        .background(AppColors.surface)
         .scrollDismissesKeyboard(.interactively)
         .keyboardDoneToolbar()
         .navigationTitle("Sign Up")

@@ -2,7 +2,6 @@ import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject private var auth: AuthStore
-    @FocusState private var focusedField: Field?
 
     #if DEBUG
     @State private var username = "testuser"
@@ -13,87 +12,91 @@ struct LoginView: View {
     #endif
     @State private var errorMessage: String?
 
-    private enum Field: Hashable {
-        case username
-        case password
-    }
-
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
-                Text("Bank of Splunk")
-                    .font(.largeTitle.bold())
-                    .padding(.top, 40)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    styledField {
-                        TextField("Username", text: $username)
-                            .textFieldStyle(.plain)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                            .textContentType(.username)
-                            .focused($focusedField, equals: .username)
-                            .submitLabel(.next)
-                            .onSubmit { focusedField = .password }
-                    }
-                    .dxaTrackID(DXA.loginUsername)
-                    .dxaSensitiveContent()
-
-                    styledField {
-                        SecureField("Password", text: $password)
-                            .textFieldStyle(.plain)
-                            .textContentType(.password)
-                            .focused($focusedField, equals: .password)
-                            .submitLabel(.go)
-                            .onSubmit(submit)
-                    }
-                    .dxaTrackID(DXA.loginPassword)
-                    .dxaSensitiveContent()
-
-                    if let errorMessage {
-                        Text(errorMessage)
-                            .foregroundStyle(.red)
-                            .font(.footnote)
-                    }
-
-                    Button(action: submit) {
-                        if auth.isLoading {
-                            ProgressView()
-                                .frame(maxWidth: .infinity)
-                        } else {
-                            Text("Sign in")
-                                .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(auth.isLoading)
-                    .dxaTrackID(DXA.loginSubmit)
-
-                    NavigationLink {
-                        SignupView()
-                    } label: {
-                        Text("Create an Account")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .dxaTrackID(DXA.signupNavigate)
-                    .dxaInteraction(
-                        trackId: DXA.signupNavigate,
-                        component: DXA.authFormComponent,
-                        flow: DXA.registrationFlow
-                    )
+            VStack(spacing: 28) {
+                VStack(spacing: 8) {
+                    Text("Bank of Splunk")
+                        .font(AppTypography.displaySmall)
+                        .foregroundStyle(AppColors.onSurface)
+                    Text("Sign in to your account")
+                        .font(AppTypography.bodyLarge)
+                        .foregroundStyle(AppColors.onSurfaceVariant)
                 }
+                .padding(.top, 48)
+
+                M3Card {
+                    VStack(spacing: 16) {
+                        M3TextField(
+                            label: "Username",
+                            text: $username,
+                            systemImage: "person.circle",
+                            textContentType: .username,
+                            autocapitalization: .never,
+                            submitLabel: .next
+                        )
+                        .dxaTrackID(DXA.loginUsername)
+                        .dxaSensitiveContent()
+
+                        M3SecureField(
+                            label: "Password",
+                            text: $password,
+                            submitLabel: .go,
+                            onSubmit: submit
+                        )
+                        .dxaTrackID(DXA.loginPassword)
+                        .dxaSensitiveContent()
+
+                        if let errorMessage {
+                            M3ErrorText(message: errorMessage)
+                                .m3ErrorTransition(isVisible: true)
+                        }
+
+                        M3FilledButton(
+                            title: "Sign in",
+                            isLoading: auth.isLoading,
+                            isDisabled: auth.isLoading,
+                            action: submit
+                        )
+                        .dxaTrackID(DXA.loginSubmit)
+
+                        NavigationLink {
+                            SignupView()
+                        } label: {
+                            Text("Create an Account")
+                                .font(AppTypography.labelLarge)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .foregroundStyle(AppColors.primary)
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: AppShape.full)
+                                        .stroke(AppColors.outline, lineWidth: 1)
+                                }
+                        }
+                        .buttonStyle(.plain)
+                        .dxaTrackID(DXA.signupNavigate)
+                        .dxaInteraction(
+                            trackId: DXA.signupNavigate,
+                            component: DXA.authFormComponent,
+                            flow: DXA.registrationFlow
+                        )
+                    }
+                }
+                .dxaSensitiveFormSection()
                 .padding(.horizontal)
 
                 #if DEBUG
                 Text("API: \(AppConfig.apiBaseURL.absoluteString)")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .font(AppTypography.bodySmall)
+                    .foregroundStyle(AppColors.onSurfaceVariant)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
+                    .dxaSensitiveContent()
                 #endif
             }
+            .padding(.bottom, 32)
         }
+        .background(AppColors.surface)
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Login")
         .navigationBarTitleDisplayMode(.inline)
@@ -102,17 +105,7 @@ struct LoginView: View {
         }
     }
 
-    private func styledField<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        HStack {
-            content()
-        }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(8)
-    }
-
     private func submit() {
-        focusedField = nil
         errorMessage = nil
         guard !username.trimmingCharacters(in: .whitespaces).isEmpty else {
             BankRum.reportValidationFailed(
@@ -122,7 +115,6 @@ struct LoginView: View {
                 flow: DXA.authenticationFlow
             )
             errorMessage = "Username is required."
-            focusedField = .username
             return
         }
         guard !password.isEmpty else {
@@ -133,7 +125,6 @@ struct LoginView: View {
                 flow: DXA.authenticationFlow
             )
             errorMessage = "Password is required."
-            focusedField = .password
             return
         }
 
