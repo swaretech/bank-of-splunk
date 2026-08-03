@@ -31,6 +31,12 @@ enum AppConfig {
         rumDisabledReason == nil
     }
 
+    /// True when built with RUM_LOADGEN=1 (loadgen / synthetic replay builds).
+    static var rumLoadgenEnabled: Bool {
+        let value = string(for: Keys.rumLoadgenEnabled).trimmingCharacters(in: .whitespacesAndNewlines)
+        return value == "1" || value.lowercased() == "true" || value.lowercased() == "yes"
+    }
+
     /// Human-readable reason RUM is disabled at startup (DEBUG diagnostics).
     static var rumDisabledReason: String? {
         let token = rumAccessToken.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -79,6 +85,7 @@ enum AppConfig {
         static let rumAccessToken = "SplunkRumAccessToken"
         static let appName = "SplunkRumAppName"
         static let deploymentEnvironment = "SplunkRumDeploymentEnvironment"
+        static let rumLoadgenEnabled = "RumLoadgenEnabled"
     }
 
     private static let legacyKeys: [String: [String]] = [

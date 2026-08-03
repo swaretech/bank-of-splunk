@@ -69,6 +69,7 @@ struct DepositView: View {
                         systemImage: "dollarsign.circle",
                         keyboardType: .decimalPad
                     )
+                    .dxaTrackID(DXA.depositAmount)
                     .dxaSensitiveContent()
                 }
                 .dxaSensitiveFormSection()

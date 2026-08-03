@@ -1,0 +1,32 @@
+name: login-payment-logout
+description: Sign in, send payment to existing recipient, sign out
+metadata:
+  synthetic: true
+  flow: payment
+steps:
+  - action: launch_app
+  - action: tap
+    accessibility_id: login-submit
+  - action: wait_for
+    accessibility_id: payment-open
+    timeout: 15
+  - action: tap
+    accessibility_id: payment-open
+  - action: wait_for
+    accessibility_id: payment-amount
+    timeout: 10
+  - action: tap
+    accessibility_id: payment-amount
+  - action: type
+    accessibility_id: payment-amount
+    text: "5.00"
+  - action: tap
+    accessibility_id: payment-submit
+  - action: wait
+    seconds: 3
+  - action: wait_for
+    accessibility_id: logout-submit
+    timeout: 15
+  - action: tap
+    accessibility_id: logout-submit
+  - action: terminate_app

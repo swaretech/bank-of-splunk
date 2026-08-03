@@ -280,6 +280,10 @@ If you add Swift files, run:
 python3 generate_xcodeproj.py
 ```
 
+## iOS RUM load generator
+
+To record and replay user scenarios that generate synthetic RUM mobile sessions, see [`../rum-loadgen/README.md`](../rum-loadgen/README.md). The loadgen uses Appium against the iOS Simulator and replays YAML scenarios keyed to the DXA accessibility IDs in this app (`login-submit`, `deposit-open`, etc.).
+
 ## Verification
 
 1. App logs in and shows balance + transactions

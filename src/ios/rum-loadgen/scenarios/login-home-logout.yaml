@@ -1,0 +1,20 @@
+name: login-home-logout
+description: Sign in with pre-filled Debug credentials, view home, sign out
+metadata:
+  synthetic: true
+  flow: authentication
+steps:
+  - action: launch_app
+  - action: tap
+    accessibility_id: login-submit
+  - action: wait_for
+    accessibility_id: deposit-open
+    timeout: 15
+  - action: wait
+    seconds: 2
+  - action: tap
+    accessibility_id: logout-submit
+  - action: wait_for
+    accessibility_id: login-submit
+    timeout: 10
+  - action: terminate_app

@@ -1,0 +1,8 @@
+{
+  "platformName": "iOS",
+  "appium:automationName": "XCUITest",
+  "appium:bundleId": "com.splunk.bankofsplunk",
+  "appium:noReset": false,
+  "appium:newCommandTimeout": 120,
+  "appium:waitForQuiescence": false
+}

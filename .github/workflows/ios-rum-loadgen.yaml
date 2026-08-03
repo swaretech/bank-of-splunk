@@ -1,0 +1,83 @@
+name: iOS RUM Loadgen
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  replay:
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    env:
+      RUM_LOADGEN_SIMULATOR: iPhone 16
+      RUM_LOADGEN_BUNDLE_ID: com.splunk.bankofsplunk
+      RUM_LOADGEN_RUM_FLUSH_SECONDS: "5"
+      RUM_LOADGEN_APPIUM_URL: http://127.0.0.1:4723
+      RUM_LOADGEN_START_APPIUM: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install -r src/ios/rum-loadgen/requirements.txt
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Appium and XCUITest driver
+        run: |
+          npm install -g appium
+          appium driver install xcuitest
+
+      - name: Boot iOS Simulator
+        run: |
+          xcrun simctl boot "iPhone 16" 2>/dev/null || true
+          open -a Simulator || true
+
+      - name: Write Secrets.xcconfig
+        env:
+          SPLUNK_RUM_ACCESS_TOKEN: ${{ secrets.SPLUNK_RUM_ACCESS_TOKEN }}
+          SPLUNK_RUM_REALM: ${{ secrets.SPLUNK_RUM_REALM }}
+          SPLUNK_RUM_APP_NAME: ${{ secrets.SPLUNK_RUM_APP_NAME }}
+          SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT: ${{ secrets.SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT }}
+        run: |
+          if [ -z "$SPLUNK_RUM_ACCESS_TOKEN" ] || [ -z "$SPLUNK_RUM_REALM" ]; then
+            echo "SPLUNK_RUM_ACCESS_TOKEN and SPLUNK_RUM_REALM secrets are required." >&2
+            exit 1
+          fi
+
+          cat > src/ios/BankOfSplunk/Config/Secrets.xcconfig <<EOF
+          API_BASE_URL = https:/\$()/eua-bank.splunko11y.com
+          MARKETING_VERSION = 1.2.0
+          SPLUNK_RUM_REALM = ${SPLUNK_RUM_REALM}
+          SPLUNK_RUM_ACCESS_TOKEN = ${SPLUNK_RUM_ACCESS_TOKEN}
+          SPLUNK_RUM_APP_NAME = ${SPLUNK_RUM_APP_NAME:-bank-of-splunk-ios}
+          SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT = ${SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT:-bank-ci}
+          EOF
+
+      - name: Build and replay scenarios
+        run: |
+          cd src/ios/rum-loadgen
+          ./scripts/run-all.sh
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-rum-loadgen-logs
+          path: |
+            /tmp/bank-of-splunk-appium.log
+            ${{ runner.temp }}/bank-of-splunk-derived.*
+          if-no-files-found: ignore

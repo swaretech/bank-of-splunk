@@ -34,10 +34,7 @@ enum SplunkRUMConfiguration {
         )
         .appVersion(AppConfig.appVersion)
         .userConfiguration(UserConfiguration(trackingMode: .anonymousTracking))
-        .globalAttributes(MutableAttributes(dictionary: [
-            "platform": .string("ios"),
-            "app.channel": .string("mobile"),
-        ]))
+        .globalAttributes(globalAttributes())
         .sessionConfiguration(SessionConfiguration(samplingRate: 1.0))
         .spanInterceptor { incoming in
             var spanData = incoming
@@ -90,6 +87,17 @@ enum SplunkRUMConfiguration {
     }
 
     #if canImport(SplunkAgent)
+    private static func globalAttributes() -> MutableAttributes {
+        var attributes = MutableAttributes()
+        attributes["platform"] = .string("ios")
+        attributes["app.channel"] = .string("mobile")
+        if AppConfig.rumLoadgenEnabled {
+            attributes["synthetic"] = .string("true")
+            attributes["loadgen.source"] = .string("ios-rum-loadgen")
+        }
+        return attributes
+    }
+
     private static func configureSessionReplay(_ agent: SplunkRum) {
         agent.sessionReplay.preferences.renderingMode = .native
         agent.sessionReplay.start()

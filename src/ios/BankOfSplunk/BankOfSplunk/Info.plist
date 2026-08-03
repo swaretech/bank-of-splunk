@@ -30,6 +30,8 @@
 	<string>$(SPLUNK_RUM_APP_NAME)</string>
 	<key>SplunkRumDeploymentEnvironment</key>
 	<string>$(SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT)</string>
+	<key>RumLoadgenEnabled</key>
+	<string>$(RUM_LOADGEN)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

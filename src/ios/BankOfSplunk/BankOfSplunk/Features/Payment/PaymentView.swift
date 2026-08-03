@@ -62,6 +62,7 @@ struct PaymentView: View {
                             systemImage: "dollarsign.circle",
                             keyboardType: .decimalPad
                         )
+                        .dxaTrackID(DXA.paymentAmount)
                         .dxaSensitiveContent()
 
                         Text("Available: \(CurrencyFormatter.format(cents: homeData.balance))")

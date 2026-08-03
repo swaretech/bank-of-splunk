@@ -1,0 +1,32 @@
+name: login-deposit-logout
+description: Sign in, deposit funds from existing external account, sign out
+metadata:
+  synthetic: true
+  flow: deposit
+steps:
+  - action: launch_app
+  - action: tap
+    accessibility_id: login-submit
+  - action: wait_for
+    accessibility_id: deposit-open
+    timeout: 15
+  - action: tap
+    accessibility_id: deposit-open
+  - action: wait_for
+    accessibility_id: deposit-amount
+    timeout: 10
+  - action: tap
+    accessibility_id: deposit-amount
+  - action: type
+    accessibility_id: deposit-amount
+    text: "25.00"
+  - action: tap
+    accessibility_id: deposit-submit
+  - action: wait
+    seconds: 3
+  - action: wait_for
+    accessibility_id: logout-submit
+    timeout: 15
+  - action: tap
+    accessibility_id: logout-submit
+  - action: terminate_app

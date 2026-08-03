@@ -1,0 +1,3 @@
+// Optional overlay for iOS RUM loadgen builds.
+// Included by build-install.sh via xcodebuild RUM_LOADGEN=1 when set.
+RUM_LOADGEN = 1
