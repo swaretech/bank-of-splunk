@@ -16,9 +16,24 @@ Native SwiftUI iOS client for Bank of Splunk with **Splunk RUM for Mobile** and 
 
 These steps start the Kubernetes backend from source, expose the mobile JSON API, and run the app in the iOS Simulator.
 
+### Working directories
+
+All paths below are relative to the **repository root** (`bank-of-splunk/`), not this `src/ios/BankOfSplunk/` folder. If your shell is already here, go up two levels first:
+
+```sh
+cd ../..   # from src/ios/BankOfSplunk → repository root
+```
+
+| Step | Where to run commands |
+|------|------------------------|
+| Create k3d cluster, deploy backend | **Repository root** |
+| `kubectl port-forward … 8083:8083` | Any directory (keep terminal open) |
+| Copy/edit `Secrets.xcconfig`, Xcode, `xcodebuild` | **`src/ios/BankOfSplunk/`** (this directory) |
+| iOS RUM loadgen (`run-all.sh`, etc.) | **`src/ios/rum-loadgen/`** |
+
 ### 1. Start the backend (first time)
 
-From the **repository root** (not this directory):
+From the **repository root**:
 
 ```sh
 # Create a local cluster (once)
@@ -52,7 +67,7 @@ See the root [README](/README.md) Quickstart for Option A (pre-built GHCR images
 
 ### 2. Port-forward the frontend
 
-In a **separate terminal**, keep this running while you use the app:
+In a **separate terminal** (any directory), keep this running while you use the app:
 
 ```sh
 kubectl --context k3d-bank-of-splunk port-forward service/frontend 8083:8083
@@ -70,8 +85,9 @@ You should get JSON with a `token` field.
 
 ### 3. Configure the iOS app
 
+From **`src/ios/BankOfSplunk/`** (this directory):
+
 ```sh
-cd src/ios/BankOfSplunk
 cp Config/Secrets.xcconfig.example Config/Secrets.xcconfig
 ```
 
@@ -81,10 +97,9 @@ Default `API_BASE_URL` is `http://127.0.0.1:8083`, which matches the port-forwar
 
 **Xcode:** open `BankOfSplunk.xcodeproj`, select an iPhone Simulator, press **⌘R**.
 
-**Command line:**
+**Command line** (from **`src/ios/BankOfSplunk/`**):
 
 ```sh
-cd src/ios/BankOfSplunk
 xcodebuild -scheme BankOfSplunk -configuration Debug \
   -destination 'platform=iOS Simulator,name=iPhone 17' build
 open BankOfSplunk.xcodeproj
@@ -138,9 +153,9 @@ If sign-in fails, the login screen (Debug builds) shows the configured API URL a
    ```
    If you use a different local port (e.g. `8084:8083`), update `API_BASE_URL` in `Config/Secrets.xcconfig` to match.
 
-2. **Frontend image missing `/api/v1`** — rebuild and redeploy the frontend after pulling the iOS/mobile API changes:
+2. **Frontend image missing `/api/v1`** — from **repository root**, rebuild and redeploy the frontend after pulling the iOS/mobile API changes:
    ```sh
-   extras/local-k8s/deploy-option-b.sh
+   ./extras/local-k8s/deploy-option-b.sh
    ```
 
 3. **Verify the API from your Mac** (should return JSON with a token):
@@ -284,17 +299,19 @@ python3 generate_xcodeproj.py
 
 Generate synthetic RUM mobile sessions by replaying YAML scenarios against the iOS Simulator on your Mac.
 
-**Prerequisites:** k3d backend running, frontend port-forward on `:8083`, real `SPLUNK_RUM_ACCESS_TOKEN` in `Config/Secrets.xcconfig`.
+**Prerequisites:** k3d backend running (deploy from **repository root** — see step 1 above), frontend port-forward on `:8083`, real `SPLUNK_RUM_ACCESS_TOKEN` in `Config/Secrets.xcconfig` (under **`src/ios/BankOfSplunk/`**).
 
 ```sh
-# Terminal 1 — keep running
+# Terminal 1 — any directory; keep running
 kubectl --context k3d-bank-of-splunk port-forward service/frontend 8083:8083
 
-# Terminal 2
+# Terminal 2 — from repository root:
 cd src/ios/rum-loadgen
 source .venv/bin/activate   # after one-time setup (see rum-loadgen README)
 ./scripts/run-all.sh
 ```
+
+If you are already in `src/ios/BankOfSplunk/`, use `cd ../rum-loadgen` instead. Loadgen scripts must be run from **`src/ios/rum-loadgen/`** (or via `./scripts/…` after `cd` there).
 
 Full setup, recording, scheduling, and troubleshooting: [`../rum-loadgen/README.md`](../rum-loadgen/README.md).
 
