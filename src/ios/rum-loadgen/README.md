@@ -101,6 +101,8 @@ python3 scripts/replay.py --scenario login-deposit-logout
 | `RUM_LOADGEN_SCENARIOS_DIR` | `./scenarios` | Scenario directory |
 | `RUM_LOADGEN_RUM_FLUSH_SECONDS` | `30` | Wait after backgrounding app for OTLP export |
 | `RUM_LOADGEN_APPIUM_URL` | `http://127.0.0.1:4791` | Appium server URL (dedicated port — see note below) |
+| `RUM_LOADGEN_API_URL` | `http://127.0.0.1:8083` | Backend API for preflight login check |
+| `RUM_LOADGEN_REQUIRE_API` | `0` | Set to `1` in CI to fail when API is unreachable |
 | `RUM_LOADGEN_SKIP_BUILD` | `0` | Set to `1` to skip build-install |
 | `RUM_LOADGEN_START_APPIUM` | `1` | Set to `0` if Appium is already running |
 
@@ -157,7 +159,7 @@ Optional secrets:
 - `SPLUNK_RUM_APP_NAME` (default: `bank-of-splunk-ios`)
 - `SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT` (default: `bank-ci`)
 
-CI uses `https://eua-bank.splunko11y.com` as the API base URL (no local Kubernetes required).
+CI sets `RUM_LOADGEN_API_URL=https://eua-bank.splunko11y.com` and `RUM_LOADGEN_REQUIRE_API=1` so the workflow fails fast if the hosted demo API is down.
 
 ## Verify in Observability Cloud
 

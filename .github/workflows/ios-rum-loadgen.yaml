@@ -11,11 +11,13 @@ jobs:
     timeout-minutes: 45
 
     env:
-      RUM_LOADGEN_SIMULATOR: iPhone 16
+      RUM_LOADGEN_SIMULATOR: iPhone 15
       RUM_LOADGEN_BUNDLE_ID: com.splunk.bankofsplunk
       RUM_LOADGEN_RUM_FLUSH_SECONDS: "30"
       RUM_LOADGEN_APPIUM_URL: http://127.0.0.1:4791
       RUM_LOADGEN_START_APPIUM: "1"
+      RUM_LOADGEN_API_URL: https://eua-bank.splunko11y.com
+      RUM_LOADGEN_REQUIRE_API: "1"
 
     steps:
       - name: Checkout
@@ -43,7 +45,7 @@ jobs:
 
       - name: Boot iOS Simulator
         run: |
-          xcrun simctl boot "iPhone 16" 2>/dev/null || true
+          xcrun simctl boot "${RUM_LOADGEN_SIMULATOR}" 2>/dev/null || true
           open -a Simulator || true
 
       - name: Configure Secrets.xcconfig for CI

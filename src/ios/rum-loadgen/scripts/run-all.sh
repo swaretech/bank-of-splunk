@@ -38,10 +38,19 @@ require_appium_driver() {
 
 check_api() {
   local api_url="${RUM_LOADGEN_API_URL:-http://127.0.0.1:8083}"
+  local hint="start kubectl port-forward service/frontend 8083:8083"
+  if [ "${RUM_LOADGEN_REQUIRE_API:-0}" = "1" ]; then
+    hint="verify the hosted API URL is reachable (RUM_LOADGEN_API_URL)"
+  fi
+
   if ! curl -sf "${api_url}/api/v1/login" \
     -X POST -H 'Content-Type: application/json' \
     -d '{"username":"testuser","password":"bankofsplunk"}' >/dev/null; then
-    log api_unreachable "\"url\":\"${api_url}\",\"hint\":\"start kubectl port-forward service/frontend 8083:8083\""
+    log api_unreachable "\"url\":\"${api_url}\",\"hint\":\"${hint}\""
+    if [ "${RUM_LOADGEN_REQUIRE_API:-0}" = "1" ]; then
+      log run_all_failed "\"error\":\"API unreachable at ${api_url}\""
+      exit 1
+    fi
   else
     log api_ok "\"url\":\"${api_url}\""
   fi
@@ -69,13 +78,24 @@ wait_for_appium() {
 }
 
 ensure_simulator() {
-  local udid
-  udid="$(xcrun simctl list devices available | grep "${RUM_LOADGEN_SIMULATOR} (" | head -1 | sed -E 's/.* \(([A-F0-9-]+)\).*/\1/')"
+  local udid=""
+  local devices
+  devices="$(xcrun simctl list devices available)"
+  for candidate in "${RUM_LOADGEN_SIMULATOR}" "iPhone 15" "iPhone 16" "iPhone 17"; do
+    udid="$(printf '%s\n' "$devices" | grep -F "${candidate} (" | head -1 | sed -E 's/.* \(([A-F0-9-]+)\).*/\1/' || true)"
+    if [ -n "$udid" ]; then
+      export RUM_LOADGEN_SIMULATOR="$candidate"
+      break
+    fi
+  done
+
   if [ -z "$udid" ]; then
-    log run_all_failed "\"error\":\"Simulator not found: ${RUM_LOADGEN_SIMULATOR}\""
+    log run_all_failed "\"error\":\"No compatible iPhone simulator found (tried ${RUM_LOADGEN_SIMULATOR}, iPhone 15, iPhone 16, iPhone 17)\""
     exit 1
   fi
+
   export RUM_LOADGEN_SIMULATOR_UDID="$udid"
+  log simulator_ready "\"name\":\"${RUM_LOADGEN_SIMULATOR}\",\"udid\":\"${udid}\""
   xcrun simctl boot "$udid" 2>/dev/null || true
   open -a Simulator >/dev/null 2>&1 || true
 }
