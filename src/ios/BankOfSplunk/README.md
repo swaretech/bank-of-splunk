@@ -16,19 +16,40 @@ Native SwiftUI iOS client for Bank of Splunk with **Splunk RUM for Mobile** and 
 
 These steps start the Kubernetes backend from source, expose the mobile JSON API, and run the app in the iOS Simulator. Paths like `src/ios/...` and `./extras/...` are relative to the **repository root** (`bank-of-splunk/`). If your shell is already in this folder (`src/ios/BankOfSplunk/`), run `cd ../..` before step 1.
 
-### 1. Start the backend (first time)
+### 1. Start the backend
 
 From the **repository root**:
 
+**First time** — create the cluster and deploy:
+
 ```sh
-# Create a local cluster (once)
+# Create a local cluster (once; skip if k3d cluster list already shows bank-of-splunk)
 k3d cluster create bank-of-splunk
 
-# Build images, load into k3d, and deploy all services
+# Build images, load into k3d, and deploy all services (several minutes on first run)
 ./extras/local-k8s/deploy-option-b.sh
 ```
 
-This uses Docker to build application images and Skaffold for the databases. Expect several minutes on first run. When finished, all pods should be `Running`:
+This builds application images with Docker and databases with Skaffold, then loads everything into k3d.
+
+**Already deployed** — after restarting Docker Desktop or the k3d containers (Docker Desktop UI **Restart** on `k3d-bank-of-splunk-*` containers, or from the CLI):
+
+```sh
+# Bring the k3d cluster back up (safe if it is already running)
+k3d cluster start bank-of-splunk
+
+# Restart Bank of Splunk application pods
+kubectl --context k3d-bank-of-splunk rollout restart deployment --all
+kubectl --context k3d-bank-of-splunk get pods --watch
+```
+
+If pods stay unhealthy or the API still fails after a restart, redeploy without rebuilding images:
+
+```sh
+SKIP_BUILD=true ./extras/local-k8s/deploy-option-b.sh
+```
+
+When finished, all pods should be `Running`:
 
 ```sh
 kubectl --context k3d-bank-of-splunk get pods
