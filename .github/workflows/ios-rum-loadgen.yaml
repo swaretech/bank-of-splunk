@@ -13,8 +13,8 @@ jobs:
     env:
       RUM_LOADGEN_SIMULATOR: iPhone 16
       RUM_LOADGEN_BUNDLE_ID: com.splunk.bankofsplunk
-      RUM_LOADGEN_RUM_FLUSH_SECONDS: "5"
-      RUM_LOADGEN_APPIUM_URL: http://127.0.0.1:4723
+      RUM_LOADGEN_RUM_FLUSH_SECONDS: "30"
+      RUM_LOADGEN_APPIUM_URL: http://127.0.0.1:4791
       RUM_LOADGEN_START_APPIUM: "1"
 
     steps:
@@ -46,26 +46,38 @@ jobs:
           xcrun simctl boot "iPhone 16" 2>/dev/null || true
           open -a Simulator || true
 
-      - name: Write Secrets.xcconfig
+      - name: Configure Secrets.xcconfig for CI
         env:
           SPLUNK_RUM_ACCESS_TOKEN: ${{ secrets.SPLUNK_RUM_ACCESS_TOKEN }}
           SPLUNK_RUM_REALM: ${{ secrets.SPLUNK_RUM_REALM }}
           SPLUNK_RUM_APP_NAME: ${{ secrets.SPLUNK_RUM_APP_NAME }}
           SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT: ${{ secrets.SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT }}
         run: |
-          if [ -z "$SPLUNK_RUM_ACCESS_TOKEN" ] || [ -z "$SPLUNK_RUM_REALM" ]; then
-            echo "SPLUNK_RUM_ACCESS_TOKEN and SPLUNK_RUM_REALM secrets are required." >&2
+          CONFIG=src/ios/BankOfSplunk/Config/Secrets.xcconfig
+          if [ ! -f "$CONFIG" ]; then
+            echo "Missing $CONFIG in repository." >&2
             exit 1
           fi
 
-          cat > src/ios/BankOfSplunk/Config/Secrets.xcconfig <<EOF
-          API_BASE_URL = https:/\$()/eua-bank.splunko11y.com
-          MARKETING_VERSION = 1.2.0
-          SPLUNK_RUM_REALM = ${SPLUNK_RUM_REALM}
-          SPLUNK_RUM_ACCESS_TOKEN = ${SPLUNK_RUM_ACCESS_TOKEN}
-          SPLUNK_RUM_APP_NAME = ${SPLUNK_RUM_APP_NAME:-bank-of-splunk-ios}
-          SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT = ${SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT:-bank-ci}
-          EOF
+          if [ -z "$SPLUNK_RUM_ACCESS_TOKEN" ]; then
+            echo "SPLUNK_RUM_ACCESS_TOKEN repository secret is required for CI." >&2
+            exit 1
+          fi
+
+          sed -i '' 's|^API_BASE_URL = .*|API_BASE_URL = https:/$()/eua-bank.splunko11y.com|' "$CONFIG"
+          sed -i '' "s|^SPLUNK_RUM_ACCESS_TOKEN = .*|SPLUNK_RUM_ACCESS_TOKEN = ${SPLUNK_RUM_ACCESS_TOKEN}|" "$CONFIG"
+
+          if [ -n "$SPLUNK_RUM_REALM" ]; then
+            sed -i '' "s|^SPLUNK_RUM_REALM = .*|SPLUNK_RUM_REALM = ${SPLUNK_RUM_REALM}|" "$CONFIG"
+          fi
+          if [ -n "$SPLUNK_RUM_APP_NAME" ]; then
+            sed -i '' "s|^SPLUNK_RUM_APP_NAME = .*|SPLUNK_RUM_APP_NAME = ${SPLUNK_RUM_APP_NAME}|" "$CONFIG"
+          fi
+          if [ -n "$SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT" ]; then
+            sed -i '' "s|^SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT = .*|SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT = ${SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT}|" "$CONFIG"
+          else
+            sed -i '' 's|^SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT = .*|SPLUNK_RUM_DEPLOYMENT_ENVIRONMENT = bank-ci|' "$CONFIG"
+          fi
 
       - name: Build and replay scenarios
         run: |
