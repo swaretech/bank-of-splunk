@@ -198,7 +198,7 @@ You can run Bank of Splunk on a local Kubernetes cluster instead of GKE. The ins
 
    > [`kubernetes-manifests/rum-loadgen.yaml`](/kubernetes-manifests/rum-loadgen.yaml) is optional RUM traffic simulation and pulls from a separate image (`ghcr.io/splunk/online-boutique/rumloadgen`). Skip it if you do not need automated RUM load: `kubectl delete deployment bankofsplunk-loadgen --ignore-not-found`
    >
-   > For **iOS mobile RUM** sessions, see [`src/ios/rum-loadgen/README.md`](/src/ios/rum-loadgen/README.md) — Appium scenario replay on macOS with optional local launchd or GitHub Actions scheduling.
+   > For **iOS mobile RUM** sessions, see [`src/ios/rum-loadgen/README.md`](/src/ios/rum-loadgen/README.md) — run Appium scenario replay locally on macOS against your k3d backend.
 
    **Option B — Build locally and load into the cluster (recommended)**
 

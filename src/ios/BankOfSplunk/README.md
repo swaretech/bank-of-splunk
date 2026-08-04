@@ -282,7 +282,21 @@ python3 generate_xcodeproj.py
 
 ## iOS RUM load generator
 
-To record and replay user scenarios that generate synthetic RUM mobile sessions, see [`../rum-loadgen/README.md`](../rum-loadgen/README.md). The loadgen uses Appium against the iOS Simulator and replays YAML scenarios keyed to the DXA accessibility IDs in this app (`login-submit`, `deposit-open`, etc.).
+Generate synthetic RUM mobile sessions by replaying YAML scenarios against the iOS Simulator on your Mac.
+
+**Prerequisites:** k3d backend running, frontend port-forward on `:8083`, real `SPLUNK_RUM_ACCESS_TOKEN` in `Config/Secrets.xcconfig`.
+
+```sh
+# Terminal 1 — keep running
+kubectl --context k3d-bank-of-splunk port-forward service/frontend 8083:8083
+
+# Terminal 2
+cd src/ios/rum-loadgen
+source .venv/bin/activate   # after one-time setup (see rum-loadgen README)
+./scripts/run-all.sh
+```
+
+Full setup, recording, scheduling, and troubleshooting: [`../rum-loadgen/README.md`](../rum-loadgen/README.md).
 
 ## Verification
 

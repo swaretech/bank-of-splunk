@@ -38,19 +38,10 @@ require_appium_driver() {
 
 check_api() {
   local api_url="${RUM_LOADGEN_API_URL:-http://127.0.0.1:8083}"
-  local hint="start kubectl port-forward service/frontend 8083:8083"
-  if [ "${RUM_LOADGEN_REQUIRE_API:-0}" = "1" ]; then
-    hint="verify the hosted API URL is reachable (RUM_LOADGEN_API_URL)"
-  fi
-
   if ! curl -sf "${api_url}/api/v1/login" \
     -X POST -H 'Content-Type: application/json' \
     -d '{"username":"testuser","password":"bankofsplunk"}' >/dev/null; then
-    log api_unreachable "\"url\":\"${api_url}\",\"hint\":\"${hint}\""
-    if [ "${RUM_LOADGEN_REQUIRE_API:-0}" = "1" ]; then
-      log run_all_failed "\"error\":\"API unreachable at ${api_url}\""
-      exit 1
-    fi
+    log api_unreachable "\"url\":\"${api_url}\",\"hint\":\"start kubectl port-forward service/frontend 8083:8083\""
   else
     log api_ok "\"url\":\"${api_url}\""
   fi
