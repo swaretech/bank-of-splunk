@@ -107,12 +107,6 @@ struct SignupView: View {
             return
         }
 
-        BankRum.reportSubmitStarted(
-            trackId: DXA.signupSubmit,
-            component: DXA.authFormComponent,
-            flow: DXA.registrationFlow
-        )
-
         let payload: [String: String] = [
             "username": username,
             "password": password,
@@ -124,7 +118,14 @@ struct SignupView: View {
 
         Task {
             do {
-                try await auth.signup(payload: payload)
+                try await BankRum.runWorkflow(
+                    Workflow.signup,
+                    trackId: DXA.signupSubmit,
+                    component: DXA.authFormComponent,
+                    flow: DXA.registrationFlow
+                ) {
+                    try await auth.signup(payload: payload)
+                }
                 dismiss()
             } catch {
                 errorMessage = error.localizedDescription

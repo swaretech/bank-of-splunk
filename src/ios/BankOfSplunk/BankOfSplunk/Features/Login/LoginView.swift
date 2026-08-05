@@ -128,15 +128,16 @@ struct LoginView: View {
             return
         }
 
-        BankRum.reportSubmitStarted(
-            trackId: DXA.loginSubmit,
-            component: DXA.authFormComponent,
-            flow: DXA.authenticationFlow
-        )
-
         Task {
             do {
-                try await auth.login(username: username, password: password)
+                try await BankRum.runWorkflow(
+                    Workflow.login,
+                    trackId: DXA.loginSubmit,
+                    component: DXA.authFormComponent,
+                    flow: DXA.authenticationFlow
+                ) {
+                    try await auth.login(username: username, password: password)
+                }
             } catch let error as APIClientError {
                 BankRum.reportLoginFailed()
                 switch error {

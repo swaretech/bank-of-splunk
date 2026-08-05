@@ -215,6 +215,8 @@ venv-*
 # iOS build artifacts (Secrets.xcconfig is committed; do not commit real tokens)
 src/ios/**/DerivedData/
 src/ios/**/.build/
+src/ios/node_modules/
+src/ios/package-lock.json
 
 # go for ci
 go/

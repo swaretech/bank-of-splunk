@@ -40,10 +40,16 @@ final class AuthStore: ObservableObject {
     }
 
     func logout() async {
-        if let token {
-            _ = try? await APIClient.shared.logout(token: token)
+        await BankRum.runWorkflow(
+            Workflow.logout,
+            trackId: DXA.logoutSubmit,
+            component: DXA.accountNavComponent
+        ) {
+            if let token {
+                _ = try? await APIClient.shared.logout(token: token)
+            }
+            clearSession()
         }
-        clearSession()
     }
 
     func applySession(_ response: LoginResponse) throws {
@@ -52,6 +58,7 @@ final class AuthStore: ObservableObject {
         displayName = response.name
         username = response.user
         accountId = response.accountId
+        BankRum.setUserContext(accountId: response.accountId)
     }
 
     func clearSession() {
@@ -60,6 +67,7 @@ final class AuthStore: ObservableObject {
         displayName = ""
         username = ""
         accountId = ""
+        BankRum.clearUserContext()
     }
 
     func showBanner(_ message: String) {
@@ -83,7 +91,12 @@ final class HomeStore: ObservableObject {
         defer { isLoading = false }
 
         do {
-            homeData = try await APIClient.shared.fetchHome(token: token)
+            homeData = try await BankRum.runWorkflow(Workflow.loadHome) {
+                try await APIClient.shared.fetchHome(token: token)
+            }
+            if let accountId = homeData?.accountId {
+                BankRum.setUserContext(accountId: accountId)
+            }
         } catch {
             errorMessage = error.localizedDescription
             BankRum.reportAPIError(operation: "fetch_home", error: error)

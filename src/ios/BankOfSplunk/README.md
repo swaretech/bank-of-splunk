@@ -254,22 +254,38 @@ Mobile DXA uses the same low-cardinality taxonomy as the web app. See [`BankOfSp
 
 | Web attribute | iOS equivalent |
 |---------------|----------------|
-| `data-trackid` | `accessibilityIdentifier` via `.dxaTrackID(...)` + `track.id` on custom events |
-| `data-component` | `component` on custom events (via `BankRum.dxaAttributes`) |
-| `data-flow` | `flow` on custom events (via `BankRum.dxaAttributes`) |
+| `data-trackid` | `accessibilityIdentifier` via `.dxaTrackID(...)` + `track.id` on custom events/workflows |
+| `data-component` | `component` on custom events and workflows (via `BankRum.dxaAttributes`) |
+| `data-flow` | `flow` on custom events and workflows (via `BankRum.dxaAttributes`) |
 | Sensitive content | `.dxaSensitiveContent()` / `.dxaSensitiveFormSection()` → Splunk RUM session replay sensitivity masking |
 
+### Custom workflows (`BankRum.swift`)
+
+Duration spans via `SplunkRum.shared.customTracking.trackWorkflow`. Each workflow carries DXA attributes (`track.id`, `component`, `flow`) plus `outcome` (`success` / `failure`). Visible in RUM for Mobile → **Custom Workflows** and usable in DXA event definitions.
+
+| Workflow | When |
+|----------|------|
+| `login` | Validated login submit through API + session apply |
+| `signup` | Validated signup submit through API + session apply |
+| `deposit` | Validated deposit submit through API (`source.mode`: `new` / `existing`) |
+| `payment` | Validated payment submit through API (`recipient.mode`: `new` / `existing`) |
+| `logout` | Sign out through API + session clear |
+| `load_home` | Fetch home/account data |
+
+After login/signup, `enduser.id` (account ID) and `enduser.role` are set as global attributes for session filtering.
+
 ### Custom events (`BankRum.swift`)
+
+Instant events (no duration) — kept for funnel steps that happen before a workflow starts:
 
 | Event | When |
 |-------|------|
 | `form.validation_failed` | Client validation failure (`component`, `flow`, `track.id`) |
-| `form.submit_started` | Before API submit |
 | `auth.login_failed` | Login API failure |
 | `ui.screen_opened` | Deposit/payment screen opened |
 | `ui.screen_view` | Screen appear with DXA attrs |
 | `ui.interaction` | Explicit nav/submit taps (e.g. transactions, deposit, payment) |
-| `api.error` | Non-auth API failures (network/5xx) with `endpoint` + `status` |
+| `api.error` | Non-auth API failures with `operation` |
 
 ### Recommended DXA event definitions
 
@@ -277,22 +293,40 @@ Create in Observability Cloud → Digital Experience Analytics → Event Definit
 
 | Event | Filter |
 |-------|--------|
-| Login submitted | custom + `track.id=login-submit` or interaction + `track.id=login-submit` |
-| Deposit completed (intent) | `track.id=deposit-submit` |
-| Payment completed (intent) | `track.id=payment-submit` |
+| Login completed | workflow `login` + `outcome=success` or `track.id=login-submit` |
+| Deposit completed | workflow `deposit` + `outcome=success` or `track.id=deposit-submit` |
+| Payment completed | workflow `payment` + `outcome=success` or `track.id=payment-submit` |
+| Registration completed | workflow `signup` + `outcome=success` |
 | Registration started | `track.id=signup-navigate` |
 | View transactions | `track.id=transactions-open` |
 | Auth failure | custom event `auth.login_failed` |
 | Form validation issue | custom event `form.validation_failed` |
 | API error | custom event `api.error` |
 
-### Source mapping (optional)
+### splunk-rum CLI (dSYM upload for RUM + DXA)
+
+Install the [Splunk RUM CLI](https://help.splunk.com/en/splunk-observability-cloud/manage-data/instrument-front-end-applications/instrument-mobile-and-web-applications-for-splunk-real-user-monitoring-rum#d0a055191a9234efead01e6d18d028311--en__install-splunk-rum) once (Node.js 18+):
 
 ```sh
-splunk-rum upload-sourcemaps --platform ios --path .
+cd src/ios
+./scripts/install-splunk-rum-cli.sh
 ```
 
-Requires `SPLUNK_ACCESS_TOKEN` and realm env vars for DXA element picker resolution.
+Upload dSYMs after a **Release** archive (enables crash symbolication and DXA element picker resolution). Use your **org API access token** (`SPLUNK_ACCESS_TOKEN`), not the RUM ingest token:
+
+```sh
+export SPLUNK_ACCESS_TOKEN=your-org-api-token
+export SPLUNK_REALM=us0
+./scripts/upload-dsyms.sh /path/to/dSYMs
+```
+
+Release builds generate dSYMs (`DEBUG_INFORMATION_FORMAT = dwarf-with-dsym`). Locate dSYMs via Xcode → Window → Organizer → archive → Show Package Contents → `dSYMs/`.
+
+Verify uploads:
+
+```sh
+./node_modules/.bin/splunk-rum ios list
+```
 
 ## Regenerating the Xcode project
 

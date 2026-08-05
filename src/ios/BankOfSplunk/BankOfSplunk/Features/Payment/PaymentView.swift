@@ -168,20 +168,23 @@ struct PaymentView: View {
             payload["account_num"] = contact.accountNum
         }
 
-        BankRum.reportSubmitStarted(
-            trackId: DXA.paymentSubmit,
-            component: DXA.paymentScreenComponent,
-            flow: DXA.paymentFlow
-        )
         isSubmitting = true
 
         Task {
             defer { isSubmitting = false }
             guard let token = auth.token else { return }
             do {
-                let message = try await APIClient.shared.payment(token: token, payload: payload)
-                auth.showBanner(message)
-                dismiss()
+                try await BankRum.runWorkflow(
+                    Workflow.payment,
+                    trackId: DXA.paymentSubmit,
+                    component: DXA.paymentScreenComponent,
+                    flow: DXA.paymentFlow,
+                    extraAttributes: ["recipient.mode": useNewRecipient ? "new" : "existing"]
+                ) {
+                    let message = try await APIClient.shared.payment(token: token, payload: payload)
+                    auth.showBanner(message)
+                    dismiss()
+                }
             } catch {
                 errorMessage = error.localizedDescription
                 BankRum.reportAPIError(operation: "payment", error: error)

@@ -19,6 +19,9 @@ enum BankRum {
         "platform",
         "app.channel",
         "screen",
+        "workflow.name",
+        "outcome",
+        "error.type",
     ]
 
     private static let blockedKeys = try! NSRegularExpression(
@@ -59,6 +62,99 @@ enum BankRum {
         return attrs
     }
 
+    // MARK: - Custom workflows (duration spans for RUM Custom Workflows + DXA)
+
+    #if canImport(SplunkAgent)
+    typealias WorkflowSpan = Span
+    #endif
+
+    @discardableResult
+    static func beginWorkflow(
+        _ name: String,
+        trackId: String? = nil,
+        component: String? = nil,
+        flow: String? = nil,
+        extraAttributes: [String: String] = [:]
+    ) -> WorkflowSpan? {
+        guard isEnabled else { return nil }
+        #if canImport(SplunkAgent)
+        let span = SplunkRum.shared.customTracking.trackWorkflow(name)
+        if let trackId {
+            span.setAttribute(key: "track.id", value: trackId)
+        }
+        if let component {
+            span.setAttribute(key: "component", value: component)
+        }
+        if let flow {
+            span.setAttribute(key: "flow", value: flow)
+        }
+        sanitize(extraAttributes).forEach { key, value in
+            span.setAttribute(key: key, value: value)
+        }
+        return span
+        #else
+        return nil
+        #endif
+    }
+
+    static func endWorkflow(
+        _ span: WorkflowSpan?,
+        outcome: String,
+        errorType: String? = nil
+    ) {
+        #if canImport(SplunkAgent)
+        guard let span else { return }
+        span.setAttribute(key: "outcome", value: outcome)
+        if let errorType {
+            span.setAttribute(key: "error.type", value: errorType)
+        }
+        span.end()
+        #endif
+    }
+
+    static func runWorkflow<T>(
+        _ name: String,
+        trackId: String? = nil,
+        component: String? = nil,
+        flow: String? = nil,
+        extraAttributes: [String: String] = [:],
+        operation: () async throws -> T
+    ) async rethrows -> T {
+        let span = beginWorkflow(
+            name,
+            trackId: trackId,
+            component: component,
+            flow: flow,
+            extraAttributes: extraAttributes
+        )
+        do {
+            let result = try await operation()
+            endWorkflow(span, outcome: "success")
+            return result
+        } catch {
+            endWorkflow(span, outcome: "failure", errorType: String(describing: type(of: error)))
+            throw error
+        }
+    }
+
+    static func setUserContext(accountId: String) {
+        guard isEnabled else { return }
+        #if canImport(SplunkAgent)
+        SplunkRum.shared.globalAttributes.setString(accountId, for: "enduser.id")
+        SplunkRum.shared.globalAttributes.setString("customer", for: "enduser.role")
+        #endif
+    }
+
+    static func clearUserContext() {
+        guard isEnabled else { return }
+        #if canImport(SplunkAgent)
+        SplunkRum.shared.globalAttributes[string: "enduser.id"] = nil
+        SplunkRum.shared.globalAttributes[string: "enduser.role"] = nil
+        #endif
+    }
+
+    // MARK: - Custom events (instant, for DXA funnel + interaction telemetry)
+
     static func reportEvent(_ eventName: String, attributes: [String: String] = [:]) {
         guard isEnabled else { return }
         let payload = sanitize(attributes)
@@ -96,18 +192,6 @@ enum BankRum {
             attrs["field"] = field
         }
         reportEvent("form.validation_failed", attributes: attrs)
-    }
-
-    static func reportSubmitStarted(
-        trackId: String,
-        component: String? = nil,
-        flow: String? = nil
-    ) {
-        reportEvent("form.submit_started", attributes: dxaAttributes(
-            trackId: trackId,
-            component: component ?? DXA.pageComponent,
-            flow: flow
-        ))
     }
 
     static func reportScreenOpened(_ screen: String) {

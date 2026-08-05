@@ -280,7 +280,10 @@ for cid, name, kind in [
         emit("\t\t\t\tALWAYS_SEARCH_USER_PATHS = NO;")
         emit("\t\t\t\tCLANG_ENABLE_MODULES = YES;")
         emit("\t\t\t\tCOPY_PHASE_STRIP = NO;")
-        emit("\t\t\t\tDEBUG_INFORMATION_FORMAT = dwarf;")
+        if name == "Release":
+            emit("\t\t\t\tDEBUG_INFORMATION_FORMAT = \"dwarf-with-dsym\";")
+        else:
+            emit("\t\t\t\tDEBUG_INFORMATION_FORMAT = dwarf;")
         emit(f"\t\t\t\tENABLE_TESTABILITY = {'YES' if name == 'Debug' else 'NO'};")
         emit("\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 16.0;")
         emit(f"\t\t\t\tMTL_ENABLE_DEBUG_INFO = {'INCLUDE_SOURCE' if name == 'Debug' else 'NO'};")

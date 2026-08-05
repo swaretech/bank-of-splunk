@@ -159,20 +159,23 @@ struct DepositView: View {
             payload["routing_num"] = contact.routingNum
         }
 
-        BankRum.reportSubmitStarted(
-            trackId: DXA.depositSubmit,
-            component: DXA.depositScreenComponent,
-            flow: DXA.depositFlow
-        )
         isSubmitting = true
 
         Task {
             defer { isSubmitting = false }
             guard let token = auth.token else { return }
             do {
-                let message = try await APIClient.shared.deposit(token: token, payload: payload)
-                auth.showBanner(message)
-                dismiss()
+                try await BankRum.runWorkflow(
+                    Workflow.deposit,
+                    trackId: DXA.depositSubmit,
+                    component: DXA.depositScreenComponent,
+                    flow: DXA.depositFlow,
+                    extraAttributes: ["source.mode": useNewAccount ? "new" : "existing"]
+                ) {
+                    let message = try await APIClient.shared.deposit(token: token, payload: payload)
+                    auth.showBanner(message)
+                    dismiss()
+                }
             } catch {
                 errorMessage = error.localizedDescription
                 BankRum.reportAPIError(operation: "deposit", error: error)

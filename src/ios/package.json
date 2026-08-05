@@ -1,0 +1,8 @@
+{
+  "name": "bank-of-splunk-ios-tooling",
+  "private": true,
+  "description": "Splunk RUM CLI for iOS dSYM upload (crash symbolication + DXA element picker)",
+  "devDependencies": {
+    "@splunk/rum-cli": "1.0.1"
+  }
+}

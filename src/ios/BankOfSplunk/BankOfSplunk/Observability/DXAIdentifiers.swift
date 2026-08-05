@@ -1,5 +1,15 @@
 import Foundation
 
+/// Splunk RUM custom workflow names (`trackWorkflow`). Visible in Custom Workflows + DXA.
+enum Workflow {
+    static let login = "login"
+    static let signup = "signup"
+    static let deposit = "deposit"
+    static let payment = "payment"
+    static let logout = "logout"
+    static let loadHome = "load_home"
+}
+
 enum DXA {
     static let pageComponent = "page"
     static let authFormComponent = "auth-form"
